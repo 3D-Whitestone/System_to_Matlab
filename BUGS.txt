@@ -1,0 +1,9 @@
+System -> write_m_func()
+	-> input should allow sympy symbol and SYMENGINE SYMBOL
+	
+	-> Funktion überarbeiten sodass sie als input auch zwei arrays akzeptiert
+
+	
+
+DynamicSymbols
+	-> generierung der Symbole (Strings) bei nummerierten Symbolen anschaun, (Klammern ein Problem in Matlab, entfernen ?)
