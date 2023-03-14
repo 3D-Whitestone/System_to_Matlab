@@ -271,7 +271,9 @@ class DynamicSymbols:
 
         for i in range(self.number_of_derivatives + 1):
             for sym in self._symbols:
-                sym_temp = sym.replace('{','').replace('}','')
+                sym_temp = sym.replace('{','').replace('}','').replace("\\","")
+                if sym_temp.startswith("_"):
+                    sym_temp = sym_temp[1:]
                 v.append(se.Symbol(sym_temp + dot_end, real=True))
             if i == 0:
                 dot_end = "_dot"

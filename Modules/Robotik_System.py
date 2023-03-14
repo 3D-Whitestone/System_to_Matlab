@@ -517,6 +517,9 @@ def write_m_func(filename: str, eqs: list, inputs: list = None, path = ""):
     mfile.write("end")
     mfile.close()
        
+def _matlab_io_string_generator(io:list)-> str:
+    #TODO
+    pass
        
 def write_init_prams(params: DynamicSymbols, filename: str, override = True):
     """writes an init file for the variables (paramters) of the equations
