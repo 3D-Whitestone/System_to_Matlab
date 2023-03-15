@@ -3,7 +3,8 @@ System -> write_m_func()
 	
 	-> Funktion überarbeiten sodass sie als input auch zwei arrays akzeptiert
 
-	
+
+	make_m_funcktion -> params hinzufügen	
 
 DynamicSymbols
 	-> generierung der Symbole (Strings) bei nummerierten Symbolen anschaun, (Klammern ein Problem in Matlab, entfernen ?)

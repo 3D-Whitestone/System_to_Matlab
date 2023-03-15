@@ -518,19 +518,24 @@ def write_m_func(filename: str, eqs: list, inputs: list = None, path = ""):
     mfile.write("end")
     mfile.close()
        
-def _matlab_io_string_generator(io:list)-> Tuple[str, str]:
-    s_out:str = ""
-    s_in:str = ""
+def _matlab_io_string_generator(io:list, reverse = False)-> Tuple[str, str]:
+    s_body:str = ""
+    s_header:str = ""
 
-    for i in io:
-        if type(i) != se.Symbol and type(i) != sp.Symbol:
-            s_in = s_in + " " + str(i[0].subs(DynamicSymbols._dict_of_variable_and_symbols))[0]
-            for ii in range(len(i)):
-                s_out = s_out + str(i[ii].subs(DynamicSymbols._dict_of_variable_and_symbols)) + " = " + str(i[0].subs(DynamicSymbols._dict_of_variable_and_symbols))[0] + "(" + str(ii+1) + ")" + "\n"
-        else:
-            s_in = s_in + " " + str(i.subs(DynamicSymbols._dict_of_variable_and_symbols))[0]
+    if reverse:
+        #TODO implementing the reverse functionality
+        pass
+        
+    else:
+        for i in io:
+            if type(i) != se.Symbol and type(i) != sp.Symbol:
+                s_header = s_header + " " + str(i[0].subs(DynamicSymbols._dict_of_variable_and_symbols))[0]
+                for ii in range(len(i)):
+                    s_body = s_body + str(i[ii].subs(DynamicSymbols._dict_of_variable_and_symbols)) + " = " + str(i[0].subs(DynamicSymbols._dict_of_variable_and_symbols))[0] + "(" + str(ii+1) + ");" + "\n"
+            else:
+                s_header = s_header + " " + str(i.subs(DynamicSymbols._dict_of_variable_and_symbols))[0]
 
-    return (s_in, s_out)
+    return (s_header, s_body)
             
 
        
