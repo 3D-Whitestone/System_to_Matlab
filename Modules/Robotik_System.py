@@ -5,7 +5,7 @@ import symengine as se
 from Modules.DynamicSymbols import DynamicSymbols
 
 import sympy as sp
-from typing import Union, Any, List
+from typing import Union, Any, List, Tuple
 
 
 class Robotik_System:
@@ -498,28 +498,41 @@ def write_m_func(filename: str, eqs: list, inputs: list = None, path = ""):
     #             raise TypeError("inpust must be a list of sympy.Symbols or symengine.Symbols")
 
 
-
-        
+    (sin, s_define) = _matlab_io_string_generator(inputs)
+    
     mfile = open(path + filename,"w")
     
     sout = sp.octave_code(eqs[0][0])
     for i in range(1,len(eqs)):
         sout += ", " + sp.octave_code(eqs[i][0].subs(DynamicSymbols._dict_of_variable_and_symbols))
     
-    sin = sp.octave_code(inputs[0])
-    for i in range(1,len(inputs)):
-        sin += ", " + sp.octave_code(inputs[i].subs(DynamicSymbols._dict_of_variable_and_symbols))
+    # sin = sp.octave_code(inputs[0])
+    # for i in range(1,len(inputs)):
+    #     sin += ", " + sp.octave_code(inputs[i].subs(DynamicSymbols._dict_of_variable_and_symbols))
     
     
     mfile.write("function [" + sout + "] = " + filename.removesuffix(".m") + "(" + sin +") \n")
+    mfile.write(s_define)
     for eq in eqs:
         mfile.write(sp.octave_code(eq[0].subs(DynamicSymbols._dict_of_variable_and_symbols)) + " = " + sp.octave_code(eq[1].subs(DynamicSymbols._dict_of_variable_and_symbols)) + "; \n")
     mfile.write("end")
     mfile.close()
        
-def _matlab_io_string_generator(io:list)-> str:
-    #TODO
-    pass
+def _matlab_io_string_generator(io:list)-> Tuple[str, str]:
+    s_out:str = ""
+    s_in:str = ""
+
+    for i in io:
+        if type(i) != se.Symbol and type(i) != sp.Symbol:
+            s_in = s_in + " " + str(i[0].subs(DynamicSymbols._dict_of_variable_and_symbols))[0]
+            for ii in range(len(i)):
+                s_out = s_out + str(i[ii].subs(DynamicSymbols._dict_of_variable_and_symbols)) + " = " + str(i[0].subs(DynamicSymbols._dict_of_variable_and_symbols))[0] + "(" + str(ii+1) + ")" + "\n"
+        else:
+            s_in = s_in + " " + str(i.subs(DynamicSymbols._dict_of_variable_and_symbols))[0]
+
+    return (s_in, s_out)
+            
+
        
 def write_init_prams(params: DynamicSymbols, filename: str, override = True):
     """writes an init file for the variables (paramters) of the equations
