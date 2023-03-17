@@ -454,39 +454,32 @@ def Drehmatrix(angle_vec: Union[se.Matrix , list]) -> se.Matrix:
 
     return Rz*Ry*Rx    
 
-def write_m_func(filename: str, eqs: list, inputs: list = None, path = ""):
+def write_m_func(filename: str, eqs: tuple, inputs: list, outputs: list, path = ""):
     """writes an eqation or a list of eqations in a matlab function
 
     Parameters
     ----------
     filename : str
         name of the file and matlab function
-    eqs : list
-        list of tuples containing output and equation for example ("s", sympy Exression) 
+    eqs : tuple
+        tuple containing two Matrices, first the left side of the equations and second the right side of the equatio 
     inputs : list
         list of Symbols which should be interpreted as inputs
     path : str, optional
         path if the file should be in another directory, do not add the filename here, by default ""
     """
+    
     if not filename.endswith(".m"):
         filename += ".m"
-    if type(eqs) != tuple and type(eqs) != list:
-        raise TypeError("eqs must be a tuple or a list of tuples")
-       
-    if type(eqs) == tuple:
-        eqs = [eqs]
         
-    if type(eqs[0]) != tuple:
-        raise TypeError("eqs must be a tuple or a list of tuples")
+    if type(eqs) != tuple:
+        raise TypeError("eqs must be a tuple")
 
-    for i in range(len(eqs)):
-        if type(eqs[i][0]) != sp.Symbol and type(eqs[i][0] != se.Symbol): # and type(eqs[i][0]) != str:
-            print(type(eqs[i][0]), eqs[i][0]) 
-            raise TypeError("first arguemnt of the tuples in eqs must be sympy.Symbol or symengine.Symbol")
-        
-        str_sym = sp.octave_code(eqs[i][0].subs(DynamicSymbols._dict_of_variable_and_symbols))
-        if "{" in str_sym  or "}" in str_sym or "\\" in str_sym:
-            raise NameError("variable Names cannot contain { or } or \\")
+    # for i in range(len(eqs[0])):
+    #     lhs = sp.octave_code(eqs[0][i].subs(DynamicSymbols._dict_of_variable_and_symbols))
+
+        # if "{" in str_sym  or "}" in str_sym or "\\" in str_sym:
+        #     raise NameError("variable Names cannot contain { or } or \\")
 
 
     # if type(inputs) != list:
@@ -497,47 +490,79 @@ def write_m_func(filename: str, eqs: list, inputs: list = None, path = ""):
     #         if type(i) != sp.Symbol and type(i) != se.Symbol:
     #             raise TypeError("inpust must be a list of sympy.Symbols or symengine.Symbols")
 
-
-    (sin, s_define) = _matlab_io_string_generator(inputs)
     
+    (sin, s_define) = _matlab_input_string_generator(inputs)
+    (sheader, sbody_top, sbody_bot) = _matlab_output_string_generator(outputs)
+
     mfile = open(path + filename,"w")
     
-    sout = sp.octave_code(eqs[0][0])
-    for i in range(1,len(eqs)):
-        sout += ", " + sp.octave_code(eqs[i][0].subs(DynamicSymbols._dict_of_variable_and_symbols))
+    # sout = sp.octave_code(eqs[0][0])
+    # for i in range(1,len(eqs)):
+    #     sout += ", " + sp.octave_code(eqs[i][0].subs(DynamicSymbols._dict_of_variable_and_symbols))
     
     # sin = sp.octave_code(inputs[0])
     # for i in range(1,len(inputs)):
     #     sin += ", " + sp.octave_code(inputs[i].subs(DynamicSymbols._dict_of_variable_and_symbols))
     
     
-    mfile.write("function [" + sout + "] = " + filename.removesuffix(".m") + "(" + sin +") \n")
+    mfile.write("function [" + sheader + "] = " + filename.removesuffix(".m") + "(" + sin +") \n")
     mfile.write(s_define)
-    for eq in eqs:
-        mfile.write(sp.octave_code(eq[0].subs(DynamicSymbols._dict_of_variable_and_symbols)) + " = " + sp.octave_code(eq[1].subs(DynamicSymbols._dict_of_variable_and_symbols)) + "; \n")
+    mfile.write(sbody_top)
+    
+    #TODO use symengine cse when atan2 works
+    f1, f2 = sp.cse(eqs[1].subs(DynamicSymbols._dict_of_variable_and_symbols))
+    f2 = f2[0]
+    for eq in f1:
+        mfile.write(str(eq[0]) + " = " +sp.octave_code(eq[1]) + ";\n")
+    
+    for i in range(len(eqs[0])):
+        mfile.write(sp.octave_code(eqs[0][i].subs(DynamicSymbols._dict_of_variable_and_symbols)) + " = " + sp.octave_code(f2[i]) + "; \n")
+        
+    mfile.write(sbody_bot)
     mfile.write("end")
     mfile.close()
        
-def _matlab_io_string_generator(io:list, reverse = False)-> Tuple[str, str]:
+def _matlab_input_string_generator(inputs:list)-> Tuple[str, str]:
     s_body:str = ""
     s_header:str = ""
+    num_of_outputs:int = 0
 
-    if reverse:
-        #TODO implementing the reverse functionality
-        pass
-        
-    else:
-        for i in io:
-            if type(i) != se.Symbol and type(i) != sp.Symbol:
-                s_header = s_header + " " + str(i[0].subs(DynamicSymbols._dict_of_variable_and_symbols))[0]
-                for ii in range(len(i)):
-                    s_body = s_body + str(i[ii].subs(DynamicSymbols._dict_of_variable_and_symbols)) + " = " + str(i[0].subs(DynamicSymbols._dict_of_variable_and_symbols))[0] + "(" + str(ii+1) + ");" + "\n"
-            else:
-                s_header = s_header + " " + str(i.subs(DynamicSymbols._dict_of_variable_and_symbols))[0]
-
-    return (s_header, s_body)
+    for i in inputs:
+        if type(i) == List or type(i) == se.Matrix or type(i) == sp.Matrix:
+            num_of_outputs += 1
+            s_header += "input_{}, ".format(num_of_outputs) 
             
+            for ii in range(len(i)):
+                s_body += str(i[ii].subs(DynamicSymbols._dict_of_variable_and_symbols)) + " = " + "input_{}({});\n".format(num_of_outputs,ii+1)
+                
+        else:
+            s_header = s_header + str(i.subs(DynamicSymbols._dict_of_variable_and_symbols)) + ", "
 
+    return (s_header[:-2], s_body)
+            
+def _matlab_output_string_generator(outputs:list)-> Tuple[str, str, str]:
+    s_header:str = ""
+    s_body_top:str = ""
+    s_body_bot:str = ""
+    num_of_outputs:int = 0
+
+
+    for i in outputs:
+        if type(i) == List or type(i) == se.Matrix or type(i) == sp.Matrix:
+            num_of_outputs += 1
+            s_header += "output_{}, ".format(num_of_outputs) 
+            
+            s_body_top += "output_{} = zeros({},1) \n".format(num_of_outputs, len(i))
+            
+            for ii in range(len(i)):
+                s_body_bot +=  "output_{}({})".format(num_of_outputs,ii+1) + " = " +str(i[ii].subs(DynamicSymbols._dict_of_variable_and_symbols)) + ";\n"
+
+                
+                
+        else:
+            s_header += str(i.subs(DynamicSymbols._dict_of_variable_and_symbols)) + ", "
+
+    return (s_header[:-2], s_body_top, s_body_bot)
        
 def write_init_prams(params: DynamicSymbols, filename: str, override = True):
     """writes an init file for the variables (paramters) of the equations
