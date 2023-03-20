@@ -9,5 +9,13 @@ System ->
 
 	make_m_funcktion -> params hinzufügen	
 
+	-> init()
+	remove is_linear unused ? 
+
 DynamicSymbols
 	-> generierung der Symbole (Strings) bei nummerierten Symbolen anschaun, (Klammern ein Problem in Matlab, entfernen ?)
+
+
+
+
+	-> Klasse in zwei Teilen, Möglichkeit schaffen Variablen ohne (t) machen.
