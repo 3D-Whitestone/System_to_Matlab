@@ -348,7 +348,7 @@ class Robotik_System:
             for temp in f1:
                 file.write(sp.octave_code(temp[0]) + "=" + sp.octave_code(temp[1]) + ";" + "\n")
             file.write("\n")
-            file.write("C=" + sp.octave_code(se.Matrix(f2).reshape(self.x.shape[0] ,self.x.shape[0])) + ";\n")
+            file.write("C=" + sp.octave_code(se.Matrix(f2).reshape(self.h.shape[0] ,self.x.shape[0])) + ";\n")
             if len(f1) != 0:
                 file.write("clear")
                 for x in f1:
@@ -359,7 +359,7 @@ class Robotik_System:
             for temp in f1:
                 file.write(sp.octave_code(temp[0]) + "=" + sp.octave_code(temp[1]) + ";" + "\n")
             file.write("\n")
-            file.write("D=" + sp.octave_code(se.Matrix(f2).reshape(self.x.shape[0] ,self.u.shape[0])) + ";\n")
+            file.write("D=" + sp.octave_code(se.Matrix(f2).reshape(self.h.shape[0] ,self.u.shape[0])) + ";\n")
             if len(f1) != 0:
                 file.write("clear")
                 for x in f1:

@@ -1,8 +1,11 @@
-System -> write_m_func()
+System -> 
+	write_m_func()
 	-> input should allow sympy symbol and SYMENGINE SYMBOL
 	
 	-> Funktion überarbeiten sodass sie als input auch zwei arrays akzeptiert
-
+	
+	liniarize()
+	-> standard Variablen für einen allgemeine Ruhelage hinzufügen um bei bereits linearen Systemen das eingeben von sinnlosen dummy variablen zu vermeiden
 
 	make_m_funcktion -> params hinzufügen	
 
