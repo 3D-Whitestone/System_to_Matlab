@@ -1,7 +1,7 @@
-Modules/__pycache__/*
-__pycache__/*
+*/__pycache__/*
 .vscode
 *.m
 *.pdf
+*.pyc
 Aufgabe_1.2/
 

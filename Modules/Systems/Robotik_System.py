@@ -2,7 +2,8 @@
 import os
 #os.environ['USE_SYMENGINE'] = '1'
 import symengine as se
-from Modules.DynamicSymbols import DynamicSymbols
+from Modules.Symbols.DynamicSymbols import DynamicSymbols
+from Modules.HelperFunctions.RobotikHelperFuncitons import _matlab_input_string_generator, _matlab_output_string_generator
 
 import sympy as sp
 from typing import Union, Any, List, Tuple
@@ -190,6 +191,7 @@ class Robotik_System:
         s_num_of_ins  = str(len(self.u))
         
         file_s_fun = open("s_fun_" + filename, "w")
+        
         file_s_fun.write(f"function [sys,x0,str,ts] = s_fun_" + filename.removesuffix(".m") + "(t,x,u,flag,params,x1_ic)")
         file_s_fun.write("\n")
         file_s_fun.write("switch flag, \n")
@@ -235,7 +237,7 @@ class Robotik_System:
         file_s_fun.write("\t \t error(['Unhandled flag = ',num2str(flag)]); \n")
         file_s_fun.write("end") 
             
-    def write_init_vars(self, filename: str, override = True):
+    def write_init_vars(self, filename: str, override = False):
         """writes an init file for the variables (paramters) of the equations
 
         Args:
@@ -280,6 +282,13 @@ class Robotik_System:
         return sub_dict
     
     def _build_sub_dict_s_fun(self) -> dict:
+        """method to build the substitution dictionary for the s-function
+
+        Returns
+        -------
+        dict
+            dict including the nessecary substitutions for the s-function
+        """
         sub_dict = {}
         
         sub_dict.update(self._x.get_variable_to_symbol_dict("x"))
@@ -415,44 +424,7 @@ class Robotik_System:
         
         return [self._A, self._B, self._C, self._D]
 
-def Drehmatrix(angle_vec: Union[se.Matrix , list]) -> se.Matrix:
-    """Computes the 3D rotation matrix for the given angle vector.
-
-    The angle vector must be in the form [x, y, z], where x, y, and z
-    represent the angles of rotation around the x, y, and z axes, respectively.
-
-    Args:
-        angle_vector: A 3x1 matrix or a list of three numbers representing the angles of rotation around the x, y, and z axes.
-
-    Returns:
-        A 3x3 symengine matrix representing the rotation matrix for the given angle vector.
-
-    Raises:
-        ValueError: If the input is not a valid angle vector.
-    """
-    if isinstance(angle_vec, sp.Matrix):
-        angle_vec = se.sympify(angle_vec)
-      # Check that the input is a valid angle vector.
-    if isinstance(angle_vec, se.Matrix):
-        if angle_vec.shape != (3, 1):
-            raise ValueError("The input must be a 3x1 matrix representing the angles of rotation around the x, y, and z axes.")
-    elif isinstance(angle_vec, list):
-        if len(angle_vec) != 3:
-            raise ValueError("The input must be a list of three numbers representing the angles of rotation around the x, y, and z axes.")
-    else:
-        raise ValueError("The input must be a 3x1 matrix or a list of three numbers representing the angles of rotation around the x, y, and z axes.")
-
-    angle = angle_vec[0]
-    Rx = se.Matrix([[1, 0, 0], [0, se.cos(angle), -se.sin(angle)],
-                   [0, se.sin(angle), se.cos(angle)]])
-    angle = angle_vec[1]
-    Ry = se.Matrix([[se.cos(angle), 0, se.sin(angle)], [
-                   0, 1, 0], [-se.sin(angle), 0, se.cos(angle)]])
-    angle = angle_vec[2]
-    Rz = se.Matrix([[se.cos(angle), -se.sin(angle), 0],
-                   [se.sin(angle), se.cos(angle), 0], [0, 0, 1]])
-
-    return Rz*Ry*Rx    
+    
 
 def write_m_func(filename: str, eqs: tuple, inputs: list, outputs: list, path = ""):
     """writes an eqation or a list of eqations in a matlab function
@@ -509,8 +481,7 @@ def write_m_func(filename: str, eqs: tuple, inputs: list, outputs: list, path = 
     mfile.write(s_define)
     mfile.write(sbody_top)
     
-    #TODO use symengine cse when atan2 works
-    f1, f2 = sp.cse(eqs[1].subs(DynamicSymbols._dict_of_variable_and_symbols))
+    f1, f2 = se.cse(eqs[1].subs(DynamicSymbols._dict_of_variable_and_symbols))
     f2 = f2[0]
     for eq in f1:
         mfile.write(str(eq[0]) + " = " +sp.octave_code(eq[1]) + ";\n")
@@ -522,47 +493,6 @@ def write_m_func(filename: str, eqs: tuple, inputs: list, outputs: list, path = 
     mfile.write("end")
     mfile.close()
        
-def _matlab_input_string_generator(inputs:list)-> Tuple[str, str]:
-    s_body:str = ""
-    s_header:str = ""
-    num_of_outputs:int = 0
-
-    for i in inputs:
-        if type(i) == List or type(i) == se.Matrix or type(i) == sp.Matrix:
-            num_of_outputs += 1
-            s_header += "input_{}, ".format(num_of_outputs) 
-            
-            for ii in range(len(i)):
-                s_body += str(i[ii].subs(DynamicSymbols._dict_of_variable_and_symbols)) + " = " + "input_{}({});\n".format(num_of_outputs,ii+1)
-                
-        else:
-            s_header = s_header + str(i.subs(DynamicSymbols._dict_of_variable_and_symbols)) + ", "
-
-    return (s_header[:-2], s_body)
-            
-def _matlab_output_string_generator(outputs:list)-> Tuple[str, str, str]:
-    s_header:str = ""
-    s_body_top:str = ""
-    s_body_bot:str = ""
-    num_of_outputs:int = 0
-
-
-    for i in outputs:
-        if type(i) == List or type(i) == se.Matrix or type(i) == sp.Matrix:
-            num_of_outputs += 1
-            s_header += "output_{}, ".format(num_of_outputs) 
-            
-            s_body_top += "output_{} = zeros({},1) \n".format(num_of_outputs, len(i))
-            
-            for ii in range(len(i)):
-                s_body_bot +=  "output_{}({})".format(num_of_outputs,ii+1) + " = " +str(i[ii].subs(DynamicSymbols._dict_of_variable_and_symbols)) + ";\n"
-
-                
-                
-        else:
-            s_header += str(i.subs(DynamicSymbols._dict_of_variable_and_symbols)) + ", "
-
-    return (s_header[:-2], s_body_top, s_body_bot)
        
 def write_init_prams(params: DynamicSymbols, filename: str, override = True):
     """writes an init file for the variables (paramters) of the equations

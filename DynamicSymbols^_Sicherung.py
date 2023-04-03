@@ -1,16 +1,15 @@
+from Modules.Symbols.Symbols import Symbols
 import symengine as se
 from typing import Union, List
-import sympy as sp
 
 from warnings import warn
 
-class DynamicSymbols:
-    
+
+class DynamicSymbols(Symbols):
     _dict_of_derivation_for_substitutions: dict = {}
-    _dict_of_variable_and_symbols: dict = {}
     _derivation_variable: se.Symbol = se.Symbol("t", real = True)
     
-    def __init__(self, symbols , number_of_variables : int, number_of_derivatives: int, pretty: bool = False):
+    def __init__(self, Notation , number_of_variables : int, number_of_derivatives: int, pretty: bool = False):
         """generates a class for variables
 
         Args:
@@ -92,6 +91,13 @@ class DynamicSymbols:
          return DynamicSymbols._derivation_variable
 
     def var_as_vec(self) -> se.Matrix:
+        """creates a vector of the state variables
+
+        Returns
+        -------
+        se.Matrix
+            vector of the state variables
+        """
         if self.number_of_derivatives == 0:
             return self.vars
         vec: se.Matrix = self.vars[0]
@@ -103,6 +109,13 @@ class DynamicSymbols:
         return vec
     
     def syms_as_vec(self) -> se.Matrix:
+        """creates a vector of the state symbols
+
+        Returns
+        -------
+        se.Matrix
+            vector of the state symbols
+        """
         if self.number_of_derivatives == 0:
             return self.syms
         vec: se.Matrix = self.syms[0]

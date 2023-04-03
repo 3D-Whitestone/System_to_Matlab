@@ -1,4 +1,4 @@
-from Modules.DynamicSymbols import DynamicSymbols
+from Modules.Symbols.DynamicSymbols import DynamicSymbols
 import symengine as se
 import pytest
 
@@ -55,4 +55,3 @@ def test_sys_var_invalid_symbols_type():
     # Test that a TypeError is raised if a tuple is passed as the `symbols` argument
     with pytest.raises(TypeError):
         var = DynamicSymbols(("a", "b"), 2, 2)
-
