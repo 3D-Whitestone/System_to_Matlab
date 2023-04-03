@@ -12,20 +12,25 @@ class SFunction(FileGenerator):
         super().__init__(Filename, Path)
         self._Elements = []
         
+        self._StateEquations = []
         self._States = []
         self._Outputs = []
         self._Inputs = []
         self._Parameters = []
 
-    def addState(self, equation) -> None:
-        if type(equation) == list:
-            for eq in equation:
-                self._States.append(eq)
-        elif type(equation) == se.Matrix and equation.shape[1] == 1:
-            for eq in equation:
-                self._States.append(eq)
-        else:
-            self._States.append(equation)
+    def addState(self, state,  equation) -> None:
+        if type(state) != se.Matrix:
+            state == se.Matrix(state)
+        if type(equation) != se.Matrix:
+            equation = se.Matrix(equation)
+        if state.shape[0] != equation.shape[0]:
+            raise ValueError("The number of states and equations does not match")   
+        if state.shape[1] != 1 or equation.shape[1] != 1:
+            raise ValueError("The states and equations have to be column vectors")
+        for eq in equation:
+            self._StateEquations.append(eq)
+        for st in state:
+            self._States.append(st)
 
     def addOutput(self, equation) -> None:
         if type(equation) == list:
@@ -64,12 +69,22 @@ class SFunction(FileGenerator):
         return s
     
     def generateFile(self) -> None:
+        i = 0
+        
+        for state in self._States:
+            i += 1
+            for ii in range(len(self._StateEquations)):
+                self._StateEquations[ii] = self._StateEquations[ii].subs(state, se.Symbol(f"x({i})"))
+            for ii in range(len(self._Outputs)):
+                self._Outputs[ii] = self._Outputs[ii].subs(state, se.Symbol(f"x({i})"))
+        
+        
         s_para_input = self._Parameter_Input_String()
         self._Elements.append(StringElement(f"function [sys,x0,str,ts] = {self._Filename[:-2]}(t,x,u,flag,params,x_ic) \n "))
         self._Elements.append(StringElement("switch flag, \n"))
         self._Elements.append(StringElement("\t" + r"case 0, % initialization" + " \n"))
         self._Elements.append(StringElement("\t \t" + "sizes = simsizes; \n"))
-        self._Elements.append(StringElement("\t \t" + f"sizes.NumContStates = {len(self._States)}; \t"  + r"% number of continous states" + " \n"))
+        self._Elements.append(StringElement("\t \t" + f"sizes.NumContStates = {len(self._StateEquations)}; \t"  + r"% number of continous states" + " \n"))
         self._Elements.append(StringElement("\t \t" + f"sizes.NumDiscStates = 0; \t"  + r"% number of discrete states" + " \n"))
         self._Elements.append(StringElement("\t \t" + f"sizes.NumOutputs = {len(self._Outputs)}; \t"  + r"% number of system outputs" + " \n"))
         self._Elements.append(StringElement("\t \t" + f"sizes.NumInputs = {len(self._Inputs)}; \t"  + r"% number of system inputs" + " \n"))
@@ -83,9 +98,9 @@ class SFunction(FileGenerator):
 
         self._Elements.append(StringElement("\t" + r"case 1, % derivative" + " \n"))
         self._Elements.append(StringElement("\t \t" + s_para_input +"\n"))
-        self._Elements.append(StringElement("\t \t" + f"sys = zeros({len(self._States)},1); \n"))
+        self._Elements.append(StringElement("\t \t" + f"sys = zeros({len(self._StateEquations)},1); \n"))
         
-        self._Elements.append(CodeElement(self._States, "sys",2, True, False))
+        self._Elements.append(CodeElement(self._StateEquations, "sys",2, True, False))
         
         self._Elements.append(StringElement("\t" + r"case 3, % output" + " \n"))
         self._Elements.append(StringElement("\t \t" + s_para_input +"\n"))

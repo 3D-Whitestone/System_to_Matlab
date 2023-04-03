@@ -183,7 +183,7 @@ class DynamicSystem(System):
     
     def write_SFunction(self, name:str, path:str = ""):
         File = SFunction(name, path)
-        File.addState(self._Equations[0])
+        File.addState(self._x, self._Equations[0])
         File.addOutput(self._Equations[1])
         File.addInput(self._Inputs)
         File.addParameter(self._Parameters) 

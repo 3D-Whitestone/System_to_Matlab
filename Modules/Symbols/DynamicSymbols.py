@@ -69,7 +69,7 @@ class DynamicSymbols(Symbols):
         else:
             for i in range(self._number_of_variables):
                 self._Symbols.append(se.Function(self._Notation + f"_{i}")(self.derivation_variable))
-                self._Symbol_to_printable_dict.update({self._Symbols[-1]: se.Symbol(self._remove_unwanted_chars_for_Matlab(self._Notation))})
+                self._Symbol_to_printable_dict.update({self._Symbols[-1]: se.Symbol(self._remove_unwanted_chars_for_Matlab(self._Notation + f"_{i}"))})
                 
                 for ii in range(1,self._number_of_derivatives + 1):
                     if ii == 1:
