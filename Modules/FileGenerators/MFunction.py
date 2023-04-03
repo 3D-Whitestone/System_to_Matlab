@@ -3,7 +3,7 @@ from .FileGenerators import FileGenerator
 
 import symengine as se
 import sympy as sp
-from Modules.Symbols.DynamicSymbols import DynamicSymbols
+from ..Symbols import DynamicSymbol
 
 from typing import Union, Any, List, Tuple
 

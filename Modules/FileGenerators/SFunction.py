@@ -77,7 +77,13 @@ class SFunction(FileGenerator):
                 self._StateEquations[ii] = self._StateEquations[ii].subs(state, se.Symbol(f"x({i})"))
             for ii in range(len(self._Outputs)):
                 self._Outputs[ii] = self._Outputs[ii].subs(state, se.Symbol(f"x({i})"))
-        
+        i = 0    
+        for inp in self._Inputs:
+            i+=1
+            for ii in range(len(self._StateEquations)):
+                self._StateEquations[ii] = self._StateEquations[ii].subs(inp, se.Symbol(f"u({i})"))
+            for ii in range(len(self._Outputs)):
+                self._Outputs[ii] = self._Outputs[ii].subs(inp, se.Symbol(f"u({i})"))
         
         s_para_input = self._Parameter_Input_String()
         self._Elements.append(StringElement(f"function [sys,x0,str,ts] = {self._Filename[:-2]}(t,x,u,flag,params,x_ic) \n "))
@@ -112,6 +118,7 @@ class SFunction(FileGenerator):
         
         self._Elements.append(StringElement("\t" + r"otherwise % unused flags" + " \n"))
         self._Elements.append(StringElement("\t \t" + "error(['Unhandled flag = ',num2str(flag)]); \n"))
+        self._Elements.append(StringElement("end"))
 
         if self._Path is None or self._Path == "":
             path = self._Filename

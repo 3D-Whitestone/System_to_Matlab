@@ -1,5 +1,5 @@
 from .System import System
-from ..Symbols import DynamicSymbols
+from ..Symbols import DynamicSymbol
 from ..FileGenerators import MFile, MFunction, SFunction
 
 import symengine as se
@@ -71,7 +71,7 @@ class DynamicSystem(System):
     
     @property
     def x_dot(self) -> se.Matrix:
-        return se.Matrix([se.diff(x, DynamicSymbols._derivation_variable).subs(DynamicSymbols._dict_of_derivation_for_substitutions) for x in self.x])
+        return se.Matrix([se.diff(x, DynamicSymbol._derivation_variable).subs(DynamicSymbol._dict_of_derivation_for_substitutions) for x in self.x])
     
     
     def linearize(self, steady_state_state_vec: se.Matrix = None, steady_state_input_vec: se.Matrix = None) -> list:
@@ -172,20 +172,20 @@ class DynamicSystem(System):
         File.addText(r"%% System parameters")
         File.addText("\n")
         for para in self._Parameters:
-            File.addText(sp.octave_code(para[0].subs(DynamicSymbols._Symbol_to_printable_dict)) + " = " + str(para[1]) + ";\n")
+            File.addText(sp.octave_code(para[0].subs(DynamicSymbol._Symbol_to_printable_dict)) + " = " + str(para[1]) + ";\n")
             
             
-        File.addText(r"params = [" + ", ".join([sp.octave_code(para[0].subs(DynamicSymbols._Symbol_to_printable_dict)) for para in self._Parameters]) + "]; \n \n")
+        File.addText(r"params = [" + ", ".join([sp.octave_code(para[0].subs(DynamicSymbol._Symbol_to_printable_dict)) for para in self._Parameters]) + "]; \n \n")
         File.addText(r"%% Initial conditions" + "\n")
         File.addText("x_ic = "+ sp.octave_code(self._x * 0) + ";\n")
         File.generateFile()
-        pass
     
     def write_SFunction(self, name:str, path:str = ""):
         File = SFunction(name, path)
         File.addState(self._x, self._Equations[0])
         File.addOutput(self._Equations[1])
-        File.addInput(self._Inputs)
+        for inp in self._Inputs:
+            File.addInput(inp)
         File.addParameter(self._Parameters) 
         File.generateFile()
     

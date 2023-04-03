@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 import symengine as se
 import sympy as sp
-from ...Symbols.DynamicSymbols import DynamicSymbols
+from ...Symbols import DynamicSymbol
 
 class MatlabElement(ABC):
     def __init__(self) -> None:

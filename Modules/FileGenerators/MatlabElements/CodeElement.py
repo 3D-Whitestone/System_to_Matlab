@@ -1,5 +1,5 @@
 from .MatlabElement import MatlabElement
-from ...Symbols import DynamicSymbols
+from ...Symbols import DynamicSymbol
 
 
 import symengine as se
@@ -12,7 +12,7 @@ class CodeElement(MatlabElement):
         MatlabElement.__init__(self)
         if type(code) == list:
             code = se.Matrix(code)
-        self._code = code.subs(DynamicSymbols._Symbol_to_printable_dict)
+        self._code = code.subs(DynamicSymbol._Symbol_to_printable_dict)
         self._name = name
         self._use_cse = use_cse
         self._Indentation = indent
@@ -49,5 +49,6 @@ class CodeElement(MatlabElement):
             s += self._Indentation *"\t" + "clear "
             for temp in f1:
                 s += sp.octave_code(temp[0]) + ", "
+            s = s[-2]
             s += "; \n \n"
         return s

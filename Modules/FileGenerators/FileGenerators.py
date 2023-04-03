@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import Union, Any, Tuple
-from ..Symbols import DynamicSymbols
+from ..Symbols import DynamicSymbol
 import symengine as se
 import sympy as sp
 
@@ -30,10 +30,10 @@ class FileGenerator(ABC):
                 s_header += name + s_count + ", "
                 
                 for ii in range(len(i)):
-                    s_body += str(i[ii].subs(DynamicSymbols._Symbol_to_printable_dict)) + " = " + name + s_count + f"({ii+1});\n"
+                    s_body += str(i[ii].subs(DynamicSymbol._Symbol_to_printable_dict)) + " = " + name + s_count + f"({ii+1});\n"
                     
             else:
-                s_header += str(i.subs(DynamicSymbols._Symbol_to_printable_dict)) + ", "
+                s_header += str(i.subs(DynamicSymbol._Symbol_to_printable_dict)) + ", "
 
         return (s_header[:-2], s_body.replace("\n", "\n" + "\t" * indents))
             
@@ -56,10 +56,10 @@ class FileGenerator(ABC):
                 s_body_top += name + s_count + " = zeros({len(i)},1) \n"
                 
                 for ii in range(len(i)):
-                    s_body_bot += name + s_count + f"({ii+1})" + " = " + str(i[ii].subs(DynamicSymbols._Symbol_to_printable_dict)) + ";\n"
+                    s_body_bot += name + s_count + f"({ii+1})" + " = " + str(i[ii].subs(DynamicSymbol._Symbol_to_printable_dict)) + ";\n"
 
                     
             else:
-                s_header += str(i.subs(DynamicSymbols._Symbol_to_printable_dict)) + ", "
+                s_header += str(i.subs(DynamicSymbol._Symbol_to_printable_dict)) + ", "
 
         return (s_header[:-2], s_body_top.replace("\n", "\n" + "\t" * indents), s_body_bot.replace("\n", "\n" + "\t" * indents))

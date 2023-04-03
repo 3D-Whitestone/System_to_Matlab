@@ -1,6 +1,6 @@
 
-from .DynamicSymbols import DynamicSymbols
-from .StaticSymbols import StaticSymbols
-from .DynamicSymbols import _diff_t as diff_t
+from .DynamicSymbol import DynamicSymbol, DynamicSymbolsList
+from .StaticSymbol import StaticSymbol , StaticSymbolList
+from .DynamicSymbol import _diff_t as diff_t
 
-__all__ = ['DynamicSymbols', 'StaticSymbols', 'diff_t']
+__all__ = ['DynamicSymbol', 'DynamicSybolsList', 'StaticSymbolList',  'StaticSymbol', 'diff_t']

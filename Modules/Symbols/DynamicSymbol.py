@@ -6,7 +6,7 @@ from typing import Union, List
 from warnings import warn
 
 
-class DynamicSymbols(Symbols):
+class DynamicSymbol(Symbols):
     _dict_of_derivation_for_substitutions: dict = {}
     _derivation_variable: se.Symbol = se.Symbol("t", real = True)
     _dict_of_steady_state_substitutions: dict = {}
@@ -16,7 +16,8 @@ class DynamicSymbols(Symbols):
         self._number_of_variables = number_of_variables
         self._number_of_derivatives = number_of_derivatives
         self._gen_numbered_state_variables()
-        self._gen_differentiation_dict()
+        if number_of_derivatives > 0:
+            self._gen_differentiation_dict()
  
         
     @property
@@ -32,7 +33,7 @@ class DynamicSymbols(Symbols):
 
     @property
     def derivation_variable(self) -> se.Symbol:
-         return DynamicSymbols._derivation_variable
+         return DynamicSymbol._derivation_variable
 
     def var_as_vec(self) -> se.Matrix:
         """creates a vector of the state variables
@@ -100,7 +101,12 @@ class DynamicSymbols(Symbols):
     def _repr_latex_(self):
         return se.Matrix(self._Symbols).reshape(self._number_of_variables, self._number_of_derivatives + 1)._repr_latex_()
 
-      
+def DynamicSymbolsList(names: List[str]):
+    l = []
+    for s in names:
+        l.append(DynamicSymbol(s).vars[0])
+    
+    return l
     
 def _diff_t(expression):
     """calculates the time derivativ of the expression an substitutes the correct symbols
@@ -111,6 +117,6 @@ def _diff_t(expression):
     Returns:
         Any: differentiated expression with correct symbols
     """
-    return se.diff(expression, DynamicSymbols._derivation_variable).subs(DynamicSymbols._dict_of_derivation_for_substitutions)
+    return se.diff(expression, DynamicSymbol._derivation_variable).subs(DynamicSymbol._dict_of_derivation_for_substitutions)
         
         

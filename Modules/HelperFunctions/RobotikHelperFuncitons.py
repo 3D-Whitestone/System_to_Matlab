@@ -1,6 +1,4 @@
 from typing import Union, Any, List, Tuple
-from Modules.Symbols.DynamicSymbols import DynamicSymbols
-import sympy as sp
 import symengine as se
 
 
@@ -19,17 +17,9 @@ def Drehmatrix(angle_vec: Union[se.Matrix , list]) -> se.Matrix:
     Raises:
         ValueError: If the input is not a valid angle vector.
     """
-    if isinstance(angle_vec, sp.Matrix):
-        angle_vec = se.sympify(angle_vec)
-      # Check that the input is a valid angle vector.
-    if isinstance(angle_vec, se.Matrix):
-        if angle_vec.shape != (3, 1):
-            raise ValueError("The input must be a 3x1 matrix representing the angles of rotation around the x, y, and z axes.")
-    elif isinstance(angle_vec, list):
-        if len(angle_vec) != 3:
-            raise ValueError("The input must be a list of three numbers representing the angles of rotation around the x, y, and z axes.")
-    else:
-        raise ValueError("The input must be a 3x1 matrix or a list of three numbers representing the angles of rotation around the x, y, and z axes.")
+    angle_vec = se.Matrix(angle_vec)
+    if angle_vec.shape != (3, 1):
+        raise ValueError("The input must be a 3x1 matrix representing the angles of rotation around the x, y, and z axes.")
 
     angle = angle_vec[0]
     Rx = se.Matrix([[1, 0, 0], [0, se.cos(angle), -se.sin(angle)],
