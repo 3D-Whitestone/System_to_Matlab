@@ -1,5 +1,6 @@
 import os
 from .FileGenerators import FileGenerator
+from .MatlabElements import CodeElement, StringElement
 
 import symengine as se
 import sympy as sp
@@ -10,62 +11,87 @@ from typing import Union, Any, List, Tuple
 
 class MFunction(FileGenerator):
     def __init__(self, filename:str, path:str = "") -> None:
-        super().__init__(filename, path)
         if not filename.endswith(".m"):
             filename += ".m"
+        super().__init__(filename, path)
         
-        self._Filename = filename
-        self._Path = path
-        
-        self._inputs = []
-        self._outputs = []
-        self._params = []
-        self._equations = []
+        self._Inputs = []
+        self._Outputs = []
+        self._Parameters = []
+        self._Equations = None
         
     def addInput(self, input:Any, name:str) -> None:
-        self._inputs.append((input, name))
+        self._Inputs.append((input, name))
         
     def addOutput(self, output:Any, name:str) -> None:
-        self._outputs.append((output, name))
+        self._Outputs.append((output, name))
     
     def addParameters(self, parameters: Any) -> None:
-        self._params.append(parameters)
+        self._Parameters.append(parameters)
     
-    def addEquations(self, equations: Union[se.Eq, List[se.Eq]]):
-        """adds equations to the MFunction
+    def addEquations(self, equations, name):
+        """Adds equations to the function, the equations are represented in the following form. name = equation. 
 
-        Parameters
-        ----------
-        equations : Union[se.Eq, List[se.Eq]]
-            Equation or list of equations to add to the MFunction,
-            only use single line equations 
+        Args:
+            equations (_type_): Expression, list of expressions or matrix of expressions.
+            name (_type_): Symbol, list of symbols or matrix of symbols. or string, list of strings or matrix of strings.
         """
-        self._equations.append(equations)
+        equations = se.Matrix(equations)
+        if type(name) == str:
+            name = se.Symbol(name)
+            name = se.Matrix([name])
+        if type(name) == list:
+            if type(name[0]) == str:
+                l = []
+                for na in name:
+                    l.append(se.Symbol(na))
+                name = se.Matrix(l)
         
-    def generateMFunction(self, path: str = None, override = True):
+        if self._Equations is None:
+            self._Equations = [name, equations]
+        else:
+            self._Equations[0].col_join(name)
+            self._Equations[1].col_join(equations)
         
-        if not override and os.path.exists(path + "MFun" + self._filename):
+        
+    def generateFile(self, override = True):
+        
+        if not override and os.path.exists(self._Path + "\\" + self._Filename):
             return
 
-        with open(path + "\MFun" + self._filename, "w") as mfile:
-            (sin, s_define) = self._matlab_input_string_generator(self._inputs)
-            (sheader, sbody_top, sbody_bot) = self._matlab_output_string_generator(self._outputs)
-            
-            mfile.write("function [" + sheader + "] = " + self._filename.removesuffix(".m") + "(" + sin +") \n")
-            mfile.write(s_define)
-            mfile.write(sbody_top)
-            
-            #TODO use symengine cse when atan2 works
-            
-            #TODO use the equations structure
-            f1, f2 = sp.cse(eqs[1].subs(DynamicSymbols._dict_of_variable_and_symbols))
-            f2 = f2[0]
-            for eq in f1:
-                mfile.write(str(eq[0]) + " = " +sp.octave_code(eq[1]) + ";\n")
-            
-            for i in range(len(eqs[0])):
-                mfile.write(sp.octave_code(eqs[0][i].subs(DynamicSymbols._dict_of_variable_and_symbols)) + " = " + sp.octave_code(f2[i]) + "; \n")
-                
-            mfile.write(sbody_bot)
-            mfile.write("end")
-            mfile.close()
+        sin = ""
+        s_define = ""
+        for i in self._Inputs:
+            (sin_temp, s_define_temp) = self._matlab_input_string_generator([i[0]],i[1])
+            sin += sin_temp + ","
+            s_define += s_define_temp
+        sin = sin[:-1]
+        
+        sheader = ""
+        sbody_top = ""
+        sbody_bot = ""
+        for o in self._Outputs:
+            (sheader_temp, sbody_top_temp, sbody_bot_temp) = self._matlab_output_string_generator([o[0]],o[1])
+            sheader += sheader_temp
+            sbody_top += sbody_top_temp
+            sbody_bot += sbody_bot_temp
+
+
+        self._Elements.append(StringElement("function [" + sheader + "] = " + self._Filename.removesuffix(".m") + "(" + sin +") \n"))
+        self._Elements.append(StringElement(s_define,1))
+        self._Elements.append(StringElement(sbody_top,1))
+        
+        for i in range(self._Equations[1].shape[0]):
+            self._Elements.append(CodeElement(self._Equations[1][i], self._Equations[0][i],1, True, False))
+        
+        self._Elements.append(StringElement(sbody_bot,1))
+        self._Elements.append(StringElement("end"))
+
+        
+        if self._Path is None or self._Path == "":
+            path = self._Filename
+        else:
+            path = self._Path + "\\" + self._Filename
+        with open(path, "w") as f:
+            for element in self._Elements:
+                f.write(element.generateCode())

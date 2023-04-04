@@ -9,6 +9,7 @@ class FileGenerator(ABC):
         super().__init__()
         self._Filename = Filename
         self._Path = Path
+        self._Elements = []
     
     @abstractmethod
     def generateFile(self) -> None:
@@ -43,7 +44,6 @@ class FileGenerator(ABC):
         s_body_bot:str = ""
         num_of_outputs:int = 0
 
-
         for i in outputs:
             if len(outputs) > 1:
                 s_count = f"_{num_of_outputs}"
@@ -53,7 +53,7 @@ class FileGenerator(ABC):
             if type(i) == list or type(i) == se.Matrix or type(i) == sp.Matrix:
                 num_of_outputs += 1
                 s_header += name + s_count + ", "
-                s_body_top += name + s_count + " = zeros({len(i)},1) \n"
+                s_body_top += name + s_count + f" = zeros({len(i)},1); \n"
                 
                 for ii in range(len(i)):
                     s_body_bot += name + s_count + f"({ii+1})" + " = " + str(i[ii].subs(DynamicSymbol._Symbol_to_printable_dict)) + ";\n"

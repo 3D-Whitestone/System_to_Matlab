@@ -18,7 +18,9 @@ class MFile(FileGenerator):
         self._Elements.append(CodeElement(expression, name, use_cse))
     
     
-    def generateFile(self) -> None:
+    def generateFile(self, override = True) -> None:
+        if not override and os.path.exists(self._Path + "\\" + self._Filename):
+            return
         if self._Path is None or self._Path == "":
             path = self._Filename
         else:

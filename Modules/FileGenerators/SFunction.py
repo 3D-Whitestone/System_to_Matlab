@@ -1,7 +1,7 @@
 from .FileGenerators import FileGenerator
 from .MatlabElements import CodeElement, StringElement
 
-
+import os
 import symengine as se
 
 class SFunction(FileGenerator):
@@ -10,7 +10,6 @@ class SFunction(FileGenerator):
         if not Filename.endswith(".m"):
             Filename += ".m"
         super().__init__(Filename, Path)
-        self._Elements = []
         
         self._StateEquations = []
         self._States = []
@@ -68,7 +67,9 @@ class SFunction(FileGenerator):
         s += self._matlab_input_string_generator(self._Inputs,"u", 2)[1]
         return s
     
-    def generateFile(self) -> None:
+    def generateFile(self, override = True) -> None:
+        if not override and os.path.exists(self._Path + "\\" + self._Filename):
+            return
         i = 0
         
         for state in self._States:

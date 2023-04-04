@@ -1,5 +1,5 @@
 from .System import System
-from ..Symbols import DynamicSymbol
+from ..Symbols import DynamicSymbol, StaticSymbol
 from ..FileGenerators import MFile, MFunction, SFunction
 
 import symengine as se
@@ -73,6 +73,15 @@ class DynamicSystem(System):
     def x_dot(self) -> se.Matrix:
         return se.Matrix([se.diff(x, DynamicSymbol._derivation_variable).subs(DynamicSymbol._dict_of_derivation_for_substitutions) for x in self.x])
     
+    @property
+    def y(self) -> se.Matrix:
+        l = None
+        for i in self._Outputs:
+            if l is None:
+                l = i[1]
+            else:
+                l = l.col_join(i[1])
+        return l
     
     def linearize(self, steady_state_state_vec: se.Matrix = None, steady_state_input_vec: se.Matrix = None) -> list:
         
@@ -137,14 +146,15 @@ class DynamicSystem(System):
         self._Inputs.append(input)
     
     def addOutput(self, output: Any, name:str) -> None:
-        output = se.sympify(output)
-        self._number_of_outputs += 1
         """Adds an output to the system y = h(x,u)
 
         Args:
             output (Any): output which should be added to the system, has to be an expressions or a Matrix of expressions
             name (str): name of the output
         """
+        output = se.sympify(output)
+        self._number_of_outputs += 1
+        
         if self._Equations[1] is None:
             if type(output) == se.Matrix:
                 self._Equations[1] = output
@@ -152,11 +162,11 @@ class DynamicSystem(System):
                 self._Equations[1] = se.Matrix([output])
         else:
             if type(output) == se.Matrix:
-                self._Equations[1].col_join(output)
+                self._Equations[1] = self._Equations[1].col_join(output)
             else:
-                self._Equations[1].col_join(se.Matrix([output]))
-            
-        self._Outputs.append((output, name))
+                self._Equations[1] = self._Equations[1].col_join(se.Matrix([output]))
+        
+        self._Outputs.append((output, StaticSymbol(name, len(output)).vars))
         
     def write_ABCD_to_File(self, name:str, path:str = ""):
         File = MFile(name, path)
@@ -188,6 +198,22 @@ class DynamicSystem(System):
             File.addInput(inp)
         File.addParameter(self._Parameters) 
         File.generateFile()
+    
+    def write_MFunctions(self, name:str, path:str = ""):
+        Fdyn = MFunction(name + "_dyn", path)
+        Fdyn.addInput(self.x, "x")
+        Fdyn.addInput(self.u, "u")
+        Fdyn.addOutput(self.x_dot, "xdot")
+        Fdyn.addEquations(self._Equations[0], self.x_dot)
+        Fdyn.addParameters(self._Parameters)
+        Fdyn.generateFile()
+        
+        Fout = MFunction(name + "_out", path)
+        Fout.addInput(self.x, "x")
+        Fout.addOutput(self.y, "y")
+        Fout.addEquations(self._Equations[1], self.y)
+        Fout.addParameters(self._Parameters)
+        Fout.generateFile()
     
     def _create_symbolic_steady_state_state_vector(self) -> se.Matrix:
         return se.Matrix([se.Symbol("x_{" + str(i) + "ss}") for i in range(len(self.x))])
