@@ -90,7 +90,7 @@ class DynamicSystem(System):
             raise ValueError("State and output equations have to be set before linearization")
         
         if steady_state_state_vec is None:
-            steady_state_input_vec = self._create_symbolic_steady_state_state_vector()
+            steady_state_state_vec = self._create_symbolic_steady_state_state_vector()
             
         if steady_state_input_vec is None:
             steady_state_input_vec = self._create_symbolic_steady_state_input_vector()
@@ -143,13 +143,13 @@ class DynamicSystem(System):
             name (str): name of the input
         """
         self._number_of_inputs += 1
-        self._Inputs.append(input)
+        self._Inputs.append(input)  
     
-    def addOutput(self, output: Any, name:str) -> None:
+    def addOutput(self, output: Union[se.Expr, se.Matrix], name: str) -> None:
         """Adds an output to the system y = h(x,u)
 
         Args:
-            output (Any): output which should be added to the system, has to be an expressions or a Matrix of expressions
+            output (Union[se.Expr, se.Matrix]): output which should be added to the system, has to be an expressions or a Matrix of expressions
             name (str): name of the output
         """
         output = se.sympify(output)

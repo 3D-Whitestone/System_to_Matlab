@@ -61,6 +61,10 @@ class CodeElement(MatlabElement):
             s += self._Indentation *"\t" + "clear "
             for temp in f1:
                 s += sp.octave_code(temp[0]) + ", "
-            s = s[:-2]
-            s += "; \n \n"
+            if s.endswith("clear "):
+                s = s[:-6]
+            else:
+                s = s[:-2]
+                s += ";"
+            s += "\n"
         return s

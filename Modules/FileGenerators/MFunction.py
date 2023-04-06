@@ -53,8 +53,7 @@ class MFunction(FileGenerator):
             self._Equations[0].col_join(name)
             self._Equations[1].col_join(equations)
         
-        
-    def generateFile(self, override = True):
+    def generateFile(self, override = True) -> None:
         
         if not override and os.path.exists(self._Path + "\\" + self._Filename):
             return

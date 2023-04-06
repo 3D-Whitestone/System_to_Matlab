@@ -1,0 +1,23 @@
+
+
+
+
+
+
+
+
+repr_latex in die Dynamic Symbols Klasse einfügen
+
+
+Drehmatrix2 Funktion die gleich beide Richtungen der Drehmatrix zurückgibt
+
+-- Behoben linearize ohne Argumente wirft einen Fehler
+
+-- Behoben (Hoffentlich) Fehler beim cse wenn keine Subexpressions gefunden werden wird das clear nicht richtig geschrieben
+
+
+
+
+
+
+
