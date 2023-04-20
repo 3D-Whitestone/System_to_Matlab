@@ -3,10 +3,8 @@ from .FileGenerators import FileGenerator
 from .MatlabElements import CodeElement, StringElement
 
 import symengine as se
-import sympy as sp
-from ..Symbols import DynamicSymbol
 
-from typing import Union, Any, List, Tuple
+from typing import Any
 
 
 class MFunction(FileGenerator):
@@ -35,7 +33,7 @@ class MFunction(FileGenerator):
         Args:
             equations (_type_): Expression, list of expressions or matrix of expressions.
             name (_type_): Symbol, list of symbols or matrix of symbols. or string, list of strings or matrix of strings.
-        """
+        """  # noqa: E501
         equations = se.Matrix(equations)
         if type(name) == str:
             name = se.Symbol(name)
@@ -70,7 +68,7 @@ class MFunction(FileGenerator):
         sbody_top = ""
         sbody_bot = ""
         for o in self._Outputs:
-            (sheader_temp, sbody_top_temp, sbody_bot_temp) = self._matlab_output_string_generator([o[0]],o[1])
+            (sheader_temp, sbody_top_temp, sbody_bot_temp) = self._matlab_output_string_generator([o[0]],o[1])  # noqa: E501
             sheader += sheader_temp
             sbody_top += sbody_top_temp
             sbody_bot += sbody_bot_temp

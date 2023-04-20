@@ -192,7 +192,7 @@ class Robotik_System:
         
         file_s_fun = open("s_fun_" + filename, "w")
         
-        file_s_fun.write(f"function [sys,x0,str,ts] = s_fun_" + filename.removesuffix(".m") + "(t,x,u,flag,params,x1_ic)")
+        file_s_fun.write("function [sys,x0,str,ts] = s_fun_" + filename.removesuffix(".m") + "(t,x,u,flag,params,x1_ic)")
         file_s_fun.write("\n")
         file_s_fun.write("switch flag, \n")
         
