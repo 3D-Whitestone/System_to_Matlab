@@ -1,11 +1,11 @@
-from Modules.Symbols.Symbols import Symbols
+from Modules.Symbols.Symbol import Symbol
 import symengine as se
 from typing import Union, List
 
 from warnings import warn
 
 
-class DynamicSymbols(Symbols):
+class DynamicSymbols(Symbol):
     _dict_of_derivation_for_substitutions: dict = {}
     _derivation_variable: se.Symbol = se.Symbol("t", real = True)
     

@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
 
-class Symbols(ABC):
+class Symbol(ABC):
     _Symbol_to_printable_dict: dict = {}
     
     

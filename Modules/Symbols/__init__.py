@@ -1,5 +1,5 @@
 
-from .DynamicSymbol import DynamicSymbol, DynamicSymbolsList
+from .DynamicSymbol import DynamicSymbol, DynamicSymbols
 from .StaticSymbol import StaticSymbol , StaticSymbolList
 from .DynamicSymbol import _diff_t as diff_t
 

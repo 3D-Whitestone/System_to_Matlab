@@ -1,9 +1,9 @@
-from .Symbols import Symbols
+from .Symbol import Symbol
 import symengine as se
 
 from typing import Union, List
 
-class StaticSymbol(Symbols):
+class StaticSymbol(Symbol):
     def __init__(self, Notation: str, number_of_variables: int = 1) -> None:
         super().__init__(Notation)
         self._number_of_variables = number_of_variables

@@ -1,4 +1,4 @@
-from .Symbols import Symbols
+from .Symbol import Symbol
 import symengine as se
 import sympy as sp
 from typing import Union, List
@@ -6,12 +6,12 @@ from typing import Union, List
 from warnings import warn
 
 
-class DynamicSymbol(Symbols):
+class DynamicSymbol(Symbol):
     _dict_of_derivation_for_substitutions: dict = {}
     _derivation_variable: se.Symbol = se.Symbol("t", real = True)
     _dict_of_steady_state_substitutions: dict = {}
     
-    def __init__(self, Notation:str , number_of_variables : int = 1, number_of_derivatives: int = 0):
+    def __init__(self, Notation:str , number_of_variables : int = 1, number_of_derivatives: int = 0) -> None:
         super().__init__(Notation)
         self._number_of_variables = number_of_variables
         self._number_of_derivatives = number_of_derivatives
@@ -31,10 +31,6 @@ class DynamicSymbol(Symbols):
 
             return v
 
-    @property
-    def derivation_variable(self) -> se.Symbol:
-         return DynamicSymbol._derivation_variable
-
     def var_as_vec(self) -> se.Matrix:
         """creates a vector of the state variables
 
@@ -45,11 +41,10 @@ class DynamicSymbol(Symbols):
         """
         return se.Matrix(self._Symbols)
 
-
     
     def _gen_numbered_state_variables(self):
         if self._number_of_variables == 1:
-            self._Symbols.append(se.Function(self._Notation)(self.derivation_variable))
+            self._Symbols.append(se.Function(self._Notation)(self._derivation_variable))
             self._Symbol_to_printable_dict.update({self._Symbols[-1]: se.Symbol(self._remove_unwanted_chars_for_Matlab(self._Notation))})
             
             for ii in range(1,self._number_of_derivatives + 1):
@@ -63,13 +58,13 @@ class DynamicSymbol(Symbols):
                     s:str = self._Notation + f"^({ii})"
                     s_sub:str = self._Notation + ii*"d" + "ot"
                 
-                self._Symbols.append(se.Function(s)(self.derivation_variable))
+                self._Symbols.append(se.Function(s)(self._derivation_variable))
                 
                 self._Symbol_to_printable_dict.update({self._Symbols[-1]: se.Symbol(self._remove_unwanted_chars_for_Matlab(s_sub))})
             
         else:
             for i in range(self._number_of_variables):
-                self._Symbols.append(se.Function(self._Notation + f"_{i}")(self.derivation_variable))
+                self._Symbols.append(se.Function(self._Notation + f"_{i}")(self._derivation_variable))
                 self._Symbol_to_printable_dict.update({self._Symbols[-1]: se.Symbol(self._remove_unwanted_chars_for_Matlab(self._Notation + f"_{i}"))})
                 
                 for ii in range(1,self._number_of_derivatives + 1):
@@ -85,13 +80,13 @@ class DynamicSymbol(Symbols):
                     
                 
                     
-                    self._Symbols.append(se.Function(s)(self.derivation_variable))
+                    self._Symbols.append(se.Function(s)(self._derivation_variable))
                     self._Symbol_to_printable_dict.update({self._Symbols[-1]: se.Symbol(self._remove_unwanted_chars_for_Matlab(s_sub))})
 
     def _gen_differentiation_dict(self):
         for i in range(len(self.vars) - 1):
             for ii in range(self._number_of_variables):
-                self._dict_of_derivation_for_substitutions.update({se.diff(self.vars[i][ii], self.derivation_variable): self.vars[i+1][ii]})
+                self._dict_of_derivation_for_substitutions.update({se.diff(self.vars[i][ii], self._derivation_variable): self.vars[i+1][ii]})
 
     # def _gen_steady_state_substitutions(self):
     #     for i in range(len(self.vars)):
@@ -101,10 +96,16 @@ class DynamicSymbol(Symbols):
     def _repr_latex_(self):
         return se.Matrix(self._Symbols).reshape(self._number_of_variables, self._number_of_derivatives + 1)._repr_latex_()
 
-def DynamicSymbolsList(names: List[str]):
+def DynamicSymbols(names: List[str], number_of_variables: int = 1, number_of_derivatives: int = 0) -> List[DynamicSymbol]:
     l = []
     for s in names:
-        l.append(DynamicSymbol(s).vars[0])
+        l.append(DynamicSymbol(s,number_of_variables,number_of_derivatives).var_as_vec())
+    
+    m = se.Matrix(l).reshape(len(names),number_of_variables*(number_of_derivatives + 1))
+    
+    l = []
+    for i in range(number_of_derivatives + 1):
+        l.append(list(m[:,i]))
     
     return l
     
