@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-
+import symengine as se
 
 class Symbol(ABC):
     _Symbol_to_printable_dict: dict = {}
@@ -15,6 +15,15 @@ class Symbol(ABC):
     def Symbol_to_printable_dict(self) -> dict:
         return self._Symbol_to_printable_dict
     
+    def var_as_vec(self) -> se.Matrix:
+        """creates a vector of the state variables
+
+        Returns
+        -------
+        se.Matrix
+            vector of the state variables
+        """
+        return se.Matrix(self._Symbols)
     
     @abstractmethod
     def _repr_latex_(self) -> str:

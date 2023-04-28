@@ -29,17 +29,7 @@ class DynamicSymbol(Symbol):
             for i in range(self._number_of_derivatives + 1):
                 v.append(se.Matrix(self._Symbols).reshape(self._number_of_variables, self._number_of_derivatives + 1)[:,i])
 
-            return v
-
-    def var_as_vec(self) -> se.Matrix:
-        """creates a vector of the state variables
-
-        Returns
-        -------
-        se.Matrix
-            vector of the state variables
-        """
-        return se.Matrix(self._Symbols)
+            return v 
 
     
     def _gen_numbered_state_variables(self):
@@ -48,11 +38,17 @@ class DynamicSymbol(Symbol):
             self._Symbol_to_printable_dict.update({self._Symbols[-1]: se.Symbol(self._remove_unwanted_chars_for_Matlab(self._Notation))})
             
             for ii in range(1,self._number_of_derivatives + 1):
+                s1:str = self._Notation[0]
+                if len(self._Notation) > 1:
+                    s2:str = self._Notation[1:]
+                else:
+                    s2:str = ""
+                
                 if ii == 1:
-                    s:str = "\dot{" + self._Notation + "}"
+                    s:str = "\dot{" +f"{s1}}}{s2}"
                     s_sub:str = self._Notation + "dot"
                 elif ii == 2:
-                    s:str = "\ddot{" + self._Notation + "}"
+                    s:str = "\ddot{" +f"{s1}}}{s2}"
                     s_sub:str = self._Notation + "ddot"
                 else:
                     s:str = self._Notation + f"^({ii})"
@@ -63,16 +59,22 @@ class DynamicSymbol(Symbol):
                 self._Symbol_to_printable_dict.update({self._Symbols[-1]: se.Symbol(self._remove_unwanted_chars_for_Matlab(s_sub))})
             
         else:
-            for i in range(self._number_of_variables):
+            for i in range(1,self._number_of_variables + 1):
                 self._Symbols.append(se.Function(self._Notation + f"_{i}")(self._derivation_variable))
                 self._Symbol_to_printable_dict.update({self._Symbols[-1]: se.Symbol(self._remove_unwanted_chars_for_Matlab(self._Notation + f"_{i}"))})
                 
                 for ii in range(1,self._number_of_derivatives + 1):
+                    s1:str = self._Notation[0]
+                    if len(self._Notation) > 1:
+                        s2:str = self._Notation[1:]
+                    else:
+                        s2:str = ""
+                    
                     if ii == 1:
-                        s:str = "\dot{" + self._Notation + f"}}_{i}"
+                        s:str = "\dot{" +f"{s1}}}{s2}_{i}"
                         s_sub:str = self._Notation + f"{i}" + "dot"
                     elif ii == 2:
-                        s:str = "\ddot{" + self._Notation + f"}}_{i}"
+                        s:str = "\ddot{" +f"{s1}}}{s2}_{i}"
                         s_sub:str = self._Notation + f"{i}" + "ddot"
                     else:
                         s:str = self._Notation + f"^{{({ii})}}" + f"_{i}"
@@ -101,8 +103,7 @@ def DynamicSymbols(names: List[str], number_of_variables: int = 1, number_of_der
     for s in names:
         l.append(DynamicSymbol(s,number_of_variables,number_of_derivatives).var_as_vec())
     
-    m = se.Matrix(l).reshape(len(names),number_of_variables*(number_of_derivatives + 1))
-    
+    m = se.Matrix(l).reshape(len(names)*number_of_variables,(number_of_derivatives + 1))
     l = []
     for i in range(number_of_derivatives + 1):
         l.append(list(m[:,i]))
