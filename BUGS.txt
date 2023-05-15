@@ -1,15 +1,5 @@
 
 
-
-
-Allgemein Nummerierte Variablen. Numerrierung mit 1 beginnen
-
-[[phiI1,phiI2],[phiI1_d,phiI2_d]] = DynamicSymbol("\phi_I",2,1).vars
-Latex anzeige behenben wenn Variablenname bereist ein _ enthält
-
-repr_latex in die Dynamic Symbols Klasse einfügen
-
-
 Drehmatrix2 Funktion die gleich beide Richtungen der Drehmatrix zurückgibt
 
 -- Behoben linearize ohne Argumente wirft einen Fehler
