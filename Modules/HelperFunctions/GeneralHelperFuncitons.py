@@ -1,5 +1,6 @@
 from typing import Union, Any, List, Tuple
 import symengine as se
+import sympy as sp
 
 def SymbolicMatrix(symbol:str, rows:int, cols:int) -> se.Matrix:
     """Creates a symbolic matrix with the given symbol.
@@ -21,3 +22,7 @@ def SymbolicMatrix(symbol:str, rows:int, cols:int) -> se.Matrix:
                 m = m.row_join(se.Matrix([[se.Symbol(symbol + f"_{{{i}{ii}}}")]]))
     
     return m.reshape(rows,cols)
+
+def disp(*args):
+    for exp in args:
+        display(sp.sympify(exp))
