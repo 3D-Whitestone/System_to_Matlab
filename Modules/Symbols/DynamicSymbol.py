@@ -118,10 +118,10 @@ class DynamicSymbol(Symbol):
         return se.Matrix(self._Symbols).reshape(self._number_of_variables, self._number_of_derivatives + 1)._repr_latex_()
 
 
-def DynamicSymbols(names: List[str], number_of_variables: int = 1, number_of_derivatives: int = 0, as_matrx_list = False) -> List[DynamicSymbol]:
+def DynamicSymbols(names: List[str], number_of_variables: int = 1, number_of_derivatives: int = 0, as_matrix_list = False) -> List[DynamicSymbol]:
     l = []
     
-    if as_matrx_list:  
+    if as_matrix_list:  
         for s in names:
             l.append(DynamicSymbol(s, number_of_variables,
                     number_of_derivatives).var_as_vec())
@@ -136,7 +136,10 @@ def DynamicSymbols(names: List[str], number_of_variables: int = 1, number_of_der
         l = []
         for i in range(number_of_derivatives + 1):
             l.append(list(m[:, i]))
-
+    if len(l) == 1:
+        if type(l[0]) == list:
+            return l[0]
+    
     return l
 
 

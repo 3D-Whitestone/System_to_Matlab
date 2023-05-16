@@ -15,6 +15,7 @@ class System(ABC):
 
         Args:
             parameter (Any): parameter which should be added to the system, has to be a symbol or a Matrix of symbols
+            
             values (Union[None, Any], optional): values for the parameter. Either a list or a column Matrix.
             Defaults to None.
         """

@@ -16,7 +16,7 @@ class StaticSymbol(Symbol):
         
     def _gen_numbered_state_variables(self) -> None:
         if self._number_of_variables == 1:
-            s, s_sub = self._generate_Latex_string(self._Notation, 1, 0)
+            s, s_sub = self._generate_Latex_string(self._Notation, 0, 0)
             self._Symbols.append(se.Symbol(s))
             self._Symbol_to_printable_dict.update({self._Symbols[0]: se.Symbol(self._remove_unwanted_chars_for_Matlab(s))})
             #self._Symbols.append(se.Symbol(self._Notation))

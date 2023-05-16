@@ -135,12 +135,11 @@ class DynamicSystem(System):
         # maybe add warning if equations are already set
         self._Equations[0] = equations
   
-    def addInput(self, input: Any, name:str) -> None:
+    def addInput(self, input: Any) -> None:
         """Adds an input to the system
 
         Args:
             input (Any): input which should be added to the system, has to be an expressions or a Matrix of expressions
-            name (str): name of the input
         """
         self._number_of_inputs += 1
         self._Inputs.append(input)  

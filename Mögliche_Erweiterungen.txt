@@ -1,20 +1,4 @@
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 Generierung von schöneren Standard SteadyState Variablen in der Symbol Klasse. 
