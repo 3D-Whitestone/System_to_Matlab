@@ -78,9 +78,10 @@ class MFunction(FileGenerator):
         self._Elements.append(StringElement(s_define,1))
         self._Elements.append(StringElement(sbody_top,1))
         
-        for i in range(self._Equations[1].shape[0]):
-            self._Elements.append(CodeElement(self._Equations[1][i], self._Equations[0][i],1, True, False))
-        
+        if self._Equations is not None:
+            for i in range(self._Equations[1].shape[0]):
+                self._Elements.append(CodeElement(self._Equations[1][i], self._Equations[0][i],1, True, False))
+            
         self._Elements.append(StringElement(sbody_bot,1))
         self._Elements.append(StringElement("end"))
 

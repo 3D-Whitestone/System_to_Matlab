@@ -1,5 +1,6 @@
 from .System import System
 from ..Symbols import DynamicSymbol, StaticSymbol
+from ..Symbols.Symbol import Symbol
 from ..FileGenerators import MFile, MFunction, SFunction
 
 import symengine as se
@@ -29,9 +30,6 @@ class DynamicSystem(System):
         self._x = se.sympify(x)
         self._u = se.sympify(u)
         self._Equations = [None, None]
-        
-        self._number_of_outputs = 0
-        self._number_of_inputs = 0
     
     @property
     def A(self) -> se.Matrix:
@@ -135,13 +133,12 @@ class DynamicSystem(System):
         # maybe add warning if equations are already set
         self._Equations[0] = equations
   
-    def addInput(self, input: Any) -> None:
+    def addInput(self, input: Any, name: str) -> None:
         """Adds an input to the system
 
         Args:
             input (Any): input which should be added to the system, has to be an expressions or a Matrix of expressions
         """
-        self._number_of_inputs += 1
         self._Inputs.append(input)  
     
     def addOutput(self, output: Union[se.Expr, se.Matrix], name: str) -> None:
@@ -152,7 +149,6 @@ class DynamicSystem(System):
             name (str): name of the output
         """
         output = se.sympify(output)
-        self._number_of_outputs += 1
         
         if self._Equations[1] is None:
             if type(output) == se.Matrix:
@@ -181,12 +177,12 @@ class DynamicSystem(System):
         File.addText(r"%% System parameters")
         File.addText("\n")
         for para in self._Parameters:
-            File.addText(sp.octave_code(para[0].subs(DynamicSymbol._Symbol_to_printable_dict)) + " = " + str(para[1]) + ";\n")
+            File.addText(str(sp.octave_code(para[0].subs(Symbol._Symbol_to_printable_dict))) + " = " + str(para[1]) + ";\n")
             
             
-        File.addText(r"params = [" + ", ".join([sp.octave_code(para[0].subs(DynamicSymbol._Symbol_to_printable_dict)) for para in self._Parameters]) + "]; \n \n")
+        File.addText(r"params = [" + ", ".join([sp.octave_code(para[0].subs(Symbol._Symbol_to_printable_dict)) for para in self._Parameters]) + "]; \n \n") # type: ignore
         File.addText(r"%% Initial conditions" + "\n")
-        File.addText("x_ic = "+ sp.octave_code(self._x * 0) + ";\n")
+        File.addText("x_ic = " + str(sp.octave_code(self._x * 0)) + ";\n")
         File.generateFile()
     
     def write_SFunction(self, name:str, path:str = ""):

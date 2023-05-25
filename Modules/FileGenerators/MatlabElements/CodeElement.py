@@ -1,5 +1,6 @@
 from .MatlabElement import MatlabElement
 from ...Symbols import DynamicSymbol
+from ...Symbols.Symbol import Symbol
 
 
 import symengine as se
@@ -15,18 +16,21 @@ class CodeElement(MatlabElement):
             code = se.Matrix([code])
         else:
             code = se.Matrix(code)
+            
         if type(name) == str:
             name = se.Symbol(name)
             name = se.Matrix([name])
-        if type(name) == list:
+        elif type(name) == list:
             if type(name[0]) == str:
                 l = []
-                for na in name:
+                for na in name: # type: ignore
                     l.append(se.Symbol(na))
                 name = se.Matrix(l)
+        else:
+            raise TypeError("name must be a string or a list of strings")
         
-        self._code = code.subs(DynamicSymbol._Symbol_to_printable_dict)
-        self._name = name.subs(DynamicSymbol._Symbol_to_printable_dict)
+        self._code = code.subs(Symbol._Symbol_to_printable_dict)
+        self._name = name.subs(Symbol._Symbol_to_printable_dict)  # type: ignore
         self._use_cse = use_cse
         self._Indentation = indent
         self._Clear = clear
@@ -49,18 +53,18 @@ class CodeElement(MatlabElement):
         
         f1, f2 = se.cse(code)
         for temp in f1:
-            s += self._Indentation *"\t" + sp.octave_code(temp[0]) + " = " + sp.octave_code(temp[1]) + ";\n"
+            s += self._Indentation *"\t" + sp.octave_code(temp[0]) + " = " + sp.octave_code(temp[1]) + ";\n" # type: ignore
         s += "\n"
         
         if shape is (1,1):
-            s += self._Indentation *"\t" + sp.octave_code(name[1,1]) + " = " + sp.octave_code(f2) + ";\n"
+            s += self._Indentation *"\t" + sp.octave_code(name[1,1]) + " = " + sp.octave_code(f2) + ";\n"  # type: ignore
         else:
-            s += self._Indentation *"\t" + sp.octave_code(name) + " = " + sp.octave_code(se.Matrix(f2).reshape(shape[0], shape[1])) + ";\n"
+            s += self._Indentation *"\t" + sp.octave_code(name) + " = " + sp.octave_code(se.Matrix(f2).reshape(shape[0], shape[1])) + ";\n"  # type: ignore
         s += "\n"
         if self._Clear:
             s += self._Indentation *"\t" + "clear "
             for temp in f1:
-                s += sp.octave_code(temp[0]) + ", "
+                s += sp.octave_code(temp[0]) + ", "  # type: ignore
             if s.endswith("clear "):
                 s = s[:-6]
             else:

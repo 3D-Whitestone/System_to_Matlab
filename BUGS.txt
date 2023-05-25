@@ -7,7 +7,7 @@ Drehmatrix2 Funktion die gleich beide Richtungen der Drehmatrix zurückgibt
 -- Behoben (Hoffentlich) Fehler beim cse wenn keine Subexpressions gefunden werden wird das clear nicht richtig geschrieben
 
 
-
+addParameters in the MFunction mach keinen sinn da sie niergens verwendet werden
 
 
 

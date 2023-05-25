@@ -38,10 +38,10 @@ class DynamicSymbol(Symbol):
 
             s, s_sub = self._generate_Latex_string(self._Notation, 0, 0)
             self._Symbols.append(se.Function(s)(self._derivation_variable))
-            self._Symbol_to_printable_dict.update(
+            Symbol._Symbol_to_printable_dict.update(
                 {self._Symbols[-1]: se.Symbol(self._remove_unwanted_chars_for_Matlab(s))})
             # self._Symbols.append(se.Function(self._Notation)(self._derivation_variable))
-            # self._Symbol_to_printable_dict.update({self._Symbols[-1]: se.Symbol(self._remove_unwanted_chars_for_Matlab(self._Notation))})
+            # Symbol._Symbol_to_printable_dict.update({self._Symbols[-1]: se.Symbol(self._remove_unwanted_chars_for_Matlab(self._Notation))})
 
             for ii in range(1, self._number_of_derivatives + 1):
                 s1: str = self._Notation[0]
@@ -64,7 +64,7 @@ class DynamicSymbol(Symbol):
 
                 self._Symbols.append(se.Function(s)(self._derivation_variable))
 
-                self._Symbol_to_printable_dict.update(
+                Symbol._Symbol_to_printable_dict.update(
                     {self._Symbols[-1]: se.Symbol(self._remove_unwanted_chars_for_Matlab(s_sub))})
 
         else:
@@ -72,7 +72,7 @@ class DynamicSymbol(Symbol):
                 s, s_sub = self._generate_Latex_string(self._Notation, i, 0)
 
                 self._Symbols.append(se.Function(s)(self._derivation_variable))
-                self._Symbol_to_printable_dict.update(
+                Symbol._Symbol_to_printable_dict.update(
                     {self._Symbols[-1]: se.Symbol(self._remove_unwanted_chars_for_Matlab(s))})
 
                 # self._Symbols.append(se.Function(self._Notation + f"_{i}")(self._derivation_variable))
@@ -100,7 +100,7 @@ class DynamicSymbol(Symbol):
 
                     self._Symbols.append(se.Function(
                         s)(self._derivation_variable))
-                    self._Symbol_to_printable_dict.update(
+                    Symbol._Symbol_to_printable_dict.update(
                         {self._Symbols[-1]: se.Symbol(self._remove_unwanted_chars_for_Matlab(s_sub))})
 
     def _gen_differentiation_dict(self):

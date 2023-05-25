@@ -18,15 +18,17 @@ class StaticSymbol(Symbol):
         if self._number_of_variables == 1:
             s, s_sub = self._generate_Latex_string(self._Notation, 0, 0)
             self._Symbols.append(se.Symbol(s))
-            self._Symbol_to_printable_dict.update({self._Symbols[0]: se.Symbol(self._remove_unwanted_chars_for_Matlab(s))})
+            
+            Symbol._Symbol_to_printable_dict.update({self._Symbols[0]: se.Symbol(s_sub)})
             #self._Symbols.append(se.Symbol(self._Notation))
-            #self._Symbol_to_printable_dict.update({self._Symbols[0]: se.Symbol(self._remove_unwanted_chars_for_Matlab(self._Notation))})
+            #Symbol._Symbol_to_printable_dict.update({self._Symbols[0]: se.Symbol(self._remove_unwanted_chars_for_Matlab(self._Notation))})
         else:
             for i in range(1, self._number_of_variables + 1):
                 s, s_sub = self._generate_Latex_string(self._Notation, i, 0)
                 self._Symbols.append(se.Symbol(s))
+                
                 #self._Symbols.append(se.Symbol(self._Notation + f"_{i}"))
-                self._Symbol_to_printable_dict.update({self._Symbols[i-1]: se.Symbol(self._remove_unwanted_chars_for_Matlab(self._remove_unwanted_chars_for_Matlab(s_sub)))})
+                Symbol._Symbol_to_printable_dict.update({self._Symbols[i-1]: se.Symbol(s_sub)})
         
     
     def _repr_latex_(self) -> str:
