@@ -89,9 +89,13 @@ class Symbol(ABC):
             s += f"_{{{number}}}"
         else:
             if number != 0:
-                s += "_{{" + s_tiefgestellt + "}_{" + f"{number}" + "}}" 
+                if s_tiefgestellt != "":
+                    s += "_{{" + s_tiefgestellt + "}_{" + f"{number}" + "}}" 
+                else:
+                    s += f"_{{{number}}}"
             else:
-                s += f"_{{{s_tiefgestellt}}}"
+                if s_tiefgestellt != "":
+                    s += f"_{{{s_tiefgestellt}}}"
                 
         
         if s_hochgestellt != "" and derivativ > 2:
@@ -99,7 +103,8 @@ class Symbol(ABC):
         elif derivativ > 2:
             s += f"^{{({derivativ})}}"
         else:
-            s += f"^{{{s_hochgestellt}}}"
+            if s_hochgestellt != "":
+                s += f"^{{{s_hochgestellt}}}"
         return s, self._remove_unwanted_chars_for_Matlab(s_sub)
     
 

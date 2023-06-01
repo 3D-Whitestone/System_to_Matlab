@@ -81,7 +81,7 @@ class DynamicSystem(System):
                 l = l.col_join(i[1])
         return l
     
-    def linearize(self, steady_state_state_vec: se.Matrix = None, steady_state_input_vec: se.Matrix = None) -> list:
+    def linearize(self, steady_state_state_vec: se.Matrix = None, steady_state_input_vec: se.Matrix = None) -> list[se.Matrix]:
         
         
         if self._Equations[0] is None or self._Equations[1] is None:
