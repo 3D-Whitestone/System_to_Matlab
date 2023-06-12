@@ -7,11 +7,43 @@ from warnings import warn
 
 
 class DynamicSymbol(Symbol):
+    """generates an instance of the DynamicSymbol class
+
+        Parameters
+        ----------
+        Notation : str
+            Name of the Symbol
+        number_of_variables : int, optional
+            Number of variables to create, by default 1
+        number_of_derivatives : int, optional
+            Number of derivatives to create, by default 0
+
+        Raises
+        ------
+        ValueError
+            general Error when the input is not valid
+    """
     _dict_of_derivation_for_substitutions: dict = {}
     _derivation_variable: se.Symbol = se.Symbol("t", real=True)
     _dict_of_steady_state_substitutions: dict = {}
 
     def __init__(self, Notation: str, number_of_variables: int = 1, number_of_derivatives: int = 0) -> None:
+        """generates an instance of the DynamicSymbol class
+
+        Parameters
+        ----------
+        Notation : str
+            Name of the Symbol
+        number_of_variables : int, optional
+            Number of variables to create, by default 1
+        number_of_derivatives : int, optional
+            Number of derivatives to create, by default 0
+
+        Raises
+        ------
+        ValueError
+            general Error when the input is not valid
+        """
         if number_of_variables <= 0:
             raise ValueError("number of variables has to be greater than 0")
         super().__init__(Notation)
@@ -23,6 +55,13 @@ class DynamicSymbol(Symbol):
 
     @property
     def vars(self) -> Union[se.MutableDenseMatrix, List[se.MutableDenseMatrix]]:
+        """returns a Matrix of the generated Symbols
+
+        Returns
+        -------
+        Union[se.MutableDenseMatrix, List[se.MutableDenseMatrix]]
+            Matrix of the generated Symbols
+        """
         if self._number_of_derivatives == 0:
             return se.Matrix(self._Symbols)
         else:
@@ -119,6 +158,24 @@ class DynamicSymbol(Symbol):
 
 
 def DynamicSymbols(names: List[str], number_of_variables: int = 1, number_of_derivatives: int = 0, as_matrix_list = False) -> List[DynamicSymbol]:
+    """ Method to generate a list of DynamicSymbols
+
+    Parameters
+    ----------
+    names : List[str]
+        List of names for the DynamicSymbols
+    number_of_variables : int, optional
+        Number of variables to create per name, by default 1
+    number_of_derivatives : int, optional
+        Number of derivatives to create per name and number, by default 0
+    as_matrix_list : bool, optional
+        Spezifies if the variables should be returned as a single Matrix or a list of vectors, by default False
+
+    Returns
+    -------
+    List[DynamicSymbol]
+        List of DynamicSymbols or Matrix of DynamicSymbols
+    """
     l = []
     
     if as_matrix_list:  

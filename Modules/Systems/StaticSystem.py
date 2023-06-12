@@ -10,6 +10,13 @@ from typing import Any, Union
 
 
 class StaticSystem(System):
+    """Adding an Equation to the System. Has to have the form name = rhs.
+            name hast to be a Symbol or a string which can be converted to a Symbol
+
+        Args:
+            rhs (se.Expr): calculation which should be added to the system
+            name (Union[str, se.Symbol]): name of the variable calculated in the equation
+    """
     def __init__(self) -> None:
         super().__init__()
         self._Equations = []

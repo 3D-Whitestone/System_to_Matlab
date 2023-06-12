@@ -10,6 +10,16 @@ from typing import Any, Union
 
 
 class DynamicSystem(System):
+    """Generates a class for a dynamic system with the following structure:
+
+        Args:
+            x (se.Matrix): Vector of the state variables
+            u (se.Matrix): Vector of the input variables
+
+        Raises:
+            ValueError: state vector is no column vector
+            ValueError: input vector is no column vector
+    """
     def __init__(self, x: se.Matrix, u: se.Matrix) -> None:
         """Generates a class for a dynamic system with the following structure:
 
@@ -61,10 +71,24 @@ class DynamicSystem(System):
     
     @property
     def x(self) -> se.Matrix:
+        """ vector of the state variables
+
+        Returns
+        -------
+        se.Matrix
+            vector of the state variables
+        """
         return self._x
     
     @property
     def u(self) -> se.Matrix:
+        """vector of the input variables
+
+        Returns
+        -------
+        se.Matrix
+            vector of the input variables
+        """
         return self._u
     
     @property
@@ -73,6 +97,13 @@ class DynamicSystem(System):
     
     @property
     def y(self) -> se.Matrix:
+        """ vector of the output functions
+
+        Returns
+        -------
+        se.Matrix
+            vector of the output functions
+        """
         l = None
         for i in self._Outputs:
             if l is None:
@@ -82,6 +113,25 @@ class DynamicSystem(System):
         return l
     
     def linearize(self, steady_state_state_vec: se.Matrix = None, steady_state_input_vec: se.Matrix = None) -> list[se.Matrix]:
+        """ linearizes the system around a given steady state
+
+        Parameters
+        ----------
+        steady_state_state_vec : se.Matrix, optional
+            vector of variables which should be used in the steady state, by default None
+        steady_state_input_vec : se.Matrix, optional
+            vector of input variables which should be used in the strady state , by default None
+
+        Returns
+        -------
+        list[se.Matrix]
+            returns the linearized Matrizes [A,B,C,D]
+
+        Raises
+        ------
+        ValueError
+            Raised if the dimensions of the given steady state vector does not match the dimensions of the state vector 
+        """
         
         
         if self._Equations[0] is None or self._Equations[1] is None:
@@ -164,6 +214,15 @@ class DynamicSystem(System):
         self._Outputs.append((output, StaticSymbol(name, len(output)).vars))
         
     def write_ABCD_to_File(self, name:str, path:str = ""):
+        """writes the ABCD Matrizes of the linearized system to a matlab file
+
+        Parameters
+        ----------
+        name : str
+            Name of the file
+        path : str, optional
+            Path in which the file should be saved, by default ""
+        """
         File = MFile(name, path)
         File.addMathExpression(self._A, "A")
         File.addMathExpression(self._B, "B")
@@ -173,6 +232,15 @@ class DynamicSystem(System):
         pass
     
     def write_init_File(self, name:str, path:str = ""):
+        """writes an init file for the Parameters and the initial conditions of the system
+
+        Parameters
+        ----------
+        name : str
+            Name of the file
+        path : str, optional
+            Path where the file should be saved, by default ""
+        """
         File = MFile(name, path)
         File.addText(r"%% System parameters")
         File.addText("\n")
@@ -186,6 +254,15 @@ class DynamicSystem(System):
         File.generateFile()
     
     def write_SFunction(self, name:str, path:str = ""):
+        """writes the nonlinear system as a SFunction to a matlab file
+
+        Parameters
+        ----------
+        name : str
+            Name of the file
+        path : str, optional
+            Path where the file should be stored, by default ""
+        """
         File = SFunction(name, path)
         File.addState(self._x, self._Equations[0])
         File.addOutput(self._Equations[1])
@@ -195,6 +272,15 @@ class DynamicSystem(System):
         File.generateFile()
     
     def write_MFunctions(self, name:str, path:str = ""):
+        """write the nonlinear system as two MFunctions to a matlab file
+
+        Parameters
+        ----------
+        name : str
+            Name of the files
+        path : str, optional
+            Path where the files should be saved, by default ""
+        """
         Fdyn = MFunction(name + "_dyn", path)
         Fdyn.addInput(self.x, "x")
         Fdyn.addInput(self.u, "u")
