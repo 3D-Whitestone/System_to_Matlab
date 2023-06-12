@@ -4,6 +4,7 @@ from ...Symbols.Symbol import Symbol
 
 
 import symengine as se
+from symengine.lib.symengine_wrapper import FunctionSymbol
 import sympy as sp
 
 from typing import Union, Any
@@ -26,7 +27,12 @@ class CodeElement(MatlabElement):
                 for na in name: # type: ignore
                     l.append(se.Symbol(na))
                 name = se.Matrix(l)
+        elif type(name) == se.Matrix or type(name) == sp.Matrix:
+            name = se.sympify(name)
+        elif type(name) == FunctionSymbol or type(name) == se.Symbol or type(name) == sp.Function or type(name) == sp.Symbol:
+            name = se.Matrix([name])
         else:
+            display(type(name))
             raise TypeError("name must be a string or a list of strings")
         
         self._code = code.subs(Symbol._Symbol_to_printable_dict)
@@ -56,8 +62,8 @@ class CodeElement(MatlabElement):
             s += self._Indentation *"\t" + sp.octave_code(temp[0]) + " = " + sp.octave_code(temp[1]) + ";\n" # type: ignore
         s += "\n"
         
-        if shape is (1,1):
-            s += self._Indentation *"\t" + sp.octave_code(name[1,1]) + " = " + sp.octave_code(f2) + ";\n"  # type: ignore
+        if shape == (1,1):
+            s += self._Indentation *"\t" + sp.octave_code(name[0,0]) + " = " + sp.octave_code(f2) + ";\n"  # type: ignore
         else:
             s += self._Indentation *"\t" + sp.octave_code(name) + " = " + sp.octave_code(se.Matrix(f2).reshape(shape[0], shape[1])) + ";\n"  # type: ignore
         s += "\n"
