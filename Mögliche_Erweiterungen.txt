@@ -1,4 +1,4 @@
 
-
+CodeElement cse erweitern dass möglichst viele Elementa au einmal optimiert werden, (Alle elemente in eine Liste Schreiben, übergeben und zurück umwandeln)
 
 Generierung von schöneren Standard SteadyState Variablen in der Symbol Klasse. 
