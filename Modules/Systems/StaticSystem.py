@@ -67,9 +67,18 @@ class StaticSystem(System):
         # self._Outputs.append((output, StaticSymbol(name, len(output)).vars))
         
     def write_MFunctions(self, name:str, path:str = ""):
+        
+        
         Fdyn = MFunction(name , path)
         for i in self._Inputs:
             Fdyn.addInput(i[0], i[1])
+        
+        pars = []
+        for i in self._Parameters:
+            pars.append(i[0])
+        
+        Fdyn.addInput(pars, "params")
+        
         for i in self._Outputs:
             Fdyn.addOutput(i[0], i[1])
 

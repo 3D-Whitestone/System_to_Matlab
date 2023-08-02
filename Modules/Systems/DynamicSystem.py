@@ -284,16 +284,20 @@ class DynamicSystem(System):
         Fdyn = MFunction(name + "_dyn", path)
         Fdyn.addInput(self.x, "x")
         Fdyn.addInput(self.u, "u")
+        pars = []
+        for i in self._Parameters:
+            pars.append(i[0])
+        Fdyn.addInput(pars, "params")
         Fdyn.addOutput(self.x_dot, "xdot")
         Fdyn.addEquations(self._Equations[0], self.x_dot)
-        Fdyn.addParameters(self._Parameters)
+        
         Fdyn.generateFile()
         
         Fout = MFunction(name + "_out", path)
         Fout.addInput(self.x, "x")
+        Fout.addInput(pars, "params")
         Fout.addOutput(self.y, "y")
         Fout.addEquations(self._Equations[1], self.y)
-        Fout.addParameters(self._Parameters)
         Fout.generateFile()
     
     def _create_symbolic_steady_state_state_vector(self) -> se.Matrix:

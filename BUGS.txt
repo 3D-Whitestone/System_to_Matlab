@@ -1,13 +1,20 @@
 Static System Add Output (name wird noch nicht betrachtet) !!!
 
+
+
+Dynamic System write_SFunction doesnt work when there are no parameters
+
+Variable einfügen um definieren zu können ob Files überschrieben werden
+
 Drehmatrix2 Funktion die gleich beide Richtungen der Drehmatrix zurückgibt
 
 -- Behoben linearize ohne Argumente wirft einen Fehler
 
 -- Behoben (Hoffentlich) Fehler beim cse wenn keine Subexpressions gefunden werden wird das clear nicht richtig geschrieben
 
+-- Behoben addParameters in the MFunction mach keinen sinn da sie niergens verwendet werden
 
-addParameters in the MFunction mach keinen sinn da sie niergens verwendet werden
+
 
 
 

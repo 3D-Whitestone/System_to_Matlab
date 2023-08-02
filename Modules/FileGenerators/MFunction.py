@@ -8,6 +8,16 @@ from typing import Any
 
 
 class MFunction(FileGenerator):
+    """
+    A class representing a mathematical function.
+
+    Attributes:
+        _Path (str): The path to the file where the function is stored.
+        _Filename (str): The name of the file where the function is stored.
+        _Inputs (List[Tuple[Any, str]]): A list of tuples representing the inputs of the function.
+        _Outputs (List[Tuple[Any, str]]): A list of tuples representing the outputs of the function.
+        _Equations (Tuple[se.Matrix, se.Matrix]): A tuple representing the equations of the function.
+    """
     def __init__(self, filename:str, path:str = "") -> None:
         if not filename.endswith(".m"):
             filename += ".m"
@@ -15,7 +25,7 @@ class MFunction(FileGenerator):
         
         self._Inputs = []
         self._Outputs = []
-        self._Parameters = []
+        # self._Parameters = []
         self._Equations = None
         
     def addInput(self, input:Any, name:str) -> None:
@@ -23,9 +33,10 @@ class MFunction(FileGenerator):
         
     def addOutput(self, output:Any, name:str) -> None:
         self._Outputs.append((output, name))
-    
-    def addParameters(self, parameters: Any) -> None:
-        self._Parameters.append(parameters)
+
+    #def addParameters(self, parameters: Any) -> None:
+    #    self._Parameters.append(parameters)
+
     
     def addEquations(self, equations, name):
         """Adds equations to the function, the equations are represented in the following form. name = equation. 
@@ -35,15 +46,12 @@ class MFunction(FileGenerator):
             name (_type_): Symbol, list of symbols or matrix of symbols. or string, list of strings or matrix of strings.
         """  # noqa: E501
         equations = se.Matrix(equations)
-        if type(name) == str:
+        if isinstance(name, str):
             name = se.Symbol(name)
             name = se.Matrix([name])
-        if type(name) == list:
-            if type(name[0]) == str:
-                l = []
-                for na in name:
-                    l.append(se.Symbol(na))
-                name = se.Matrix(l)
+        if isinstance(name, list):
+            if isinstance(name[0], str):
+                name = se.Matrix([se.Symbol(na) for na in name])
         
         if self._Equations is None:
             self._Equations = [name, equations]
@@ -52,8 +60,8 @@ class MFunction(FileGenerator):
             self._Equations[1].col_join(equations)
         
     def generateFile(self, override = True) -> None:
-        
-        if not override and os.path.exists(self._Path + "\\" + self._Filename):
+        #if not override and os.path.exists(self._Path + "\\" + self._Filename):
+        if not override and os.path.exists(os.path.join(self.path, self.filename)):
             return
 
         sin = ""

@@ -10,6 +10,7 @@ class FileGenerator(ABC):
         self._Filename = Filename
         self._Path = Path
         self._Elements = []
+        
     @abstractmethod
     def generateFile(self) -> None:
         pass
@@ -24,8 +25,7 @@ class FileGenerator(ABC):
                 s_count = f"_{num_of_inputs}"
             else:
                 s_count = ""
-            
-            if type(i) == list or type(i) == se.Matrix or type(i) == sp.Matrix:
+            if isinstance(i, (list, se.Matrix, sp.Matrix)):
                 num_of_inputs += 1
                 s_header += name + s_count + ", "
                 
@@ -49,7 +49,7 @@ class FileGenerator(ABC):
             else:
                 s_count = ""
             
-            if type(i) == list or type(i) == se.Matrix or type(i) == sp.Matrix:
+            if isinstance(i, (list, se.Matrix, sp.Matrix)):
                 num_of_outputs += 1
                 s_header += name + s_count + ", "
                 s_body_top += name + s_count + f" = zeros({len(i)},1); \n"
