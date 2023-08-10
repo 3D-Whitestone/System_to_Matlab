@@ -73,11 +73,11 @@ class StaticSystem(System):
         for i in self._Inputs:
             Fdyn.addInput(i[0], i[1])
         
-        pars = []
-        for i in self._Parameters:
-            pars.append(i[0])
+        #pars = []
+        #for i in self._Parameters:
+        #    pars.append(i[0])
         
-        Fdyn.addInput(pars, "params")
+        #Fdyn.addInput(pars, "params")
         
         for i in self._Outputs:
             Fdyn.addOutput(i[0], i[1])

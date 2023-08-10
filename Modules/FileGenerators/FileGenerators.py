@@ -1,8 +1,10 @@
 from abc import ABC, abstractmethod
 from typing import Union, Any, Tuple
 from ..Symbols.Symbol import Symbol
+from .MatlabElements import CodeElement
 import symengine as se
 import sympy as sp
+
 
 class FileGenerator(ABC):
     def __init__(self, Filename:str, Path:str = None) -> None: # type: ignore
@@ -49,15 +51,27 @@ class FileGenerator(ABC):
             else:
                 s_count = ""
             
-            if isinstance(i, (list, se.Matrix, sp.Matrix)):
+            if isinstance(i, list):
                 num_of_outputs += 1
                 s_header += name + s_count + ", "
                 s_body_top += name + s_count + f" = zeros({len(i)},1); \n"
                 
                 for ii in range(len(i)):
-                    s_body_bot += name + s_count + f"({ii+1})" + " = " + str(i[ii].subs(Symbol._Symbol_to_printable_dict)) + ";\n" # type: ignore
-
+                    s_body_bot += CodeElement(i[ii],name + s_count + f"({ii+1})").generateCode()[1:-2]
                     
+                    #s_body_bot += name + s_count + f"({ii+1})" + " = " + str(i[ii].subs(Symbol._Symbol_to_printable_dict)) + ";\n" # type: ignore
+            
+            elif isinstance(i, (se.Matrix, sp.Matrix)):
+                num_of_outputs += 1
+                s_header += name + s_count + ", "
+                #s_body_top += name + s_count + f" = zeros({len(i)},1); \n"
+                s_temp =  CodeElement(i,name).generateCode()
+                if s_temp.startswith("\n"):
+                    s_temp = s_temp[1:]
+                if s_temp.endswith("\n\n\n"):
+                    s_temp = s_temp[:-2]
+                s_body_bot += s_temp
+                
             else:
                 s_header += str(i.subs(Symbol._Symbol_to_printable_dict)) + ", "
 

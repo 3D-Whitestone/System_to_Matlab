@@ -60,25 +60,25 @@ class Symbol(ABC):
             s_tiefgestellt = ""
         
         if derivativ == 0:
-            s:str = s_startChracter
+            s = s_startChracter
             if number != 0:
                 s_sub:str = Name + f"{number}"
             else:
                 s_sub:str = Name
         elif derivativ == 1:
-            s:str = "\dot{" +f"{s_startChracter}}}{s_rest}"
+            s = "\dot{" +f"{s_startChracter}}}{s_rest}"
             if number != 0:
                 s_sub:str = Name + f"{number}" + "dot"
             else:
                 s_sub:str = Name + "dot"
         elif derivativ == 2:
-            s:str = "\ddot{" +f"{s_startChracter}}}{s_rest}"
+            s = "\ddot{" +f"{s_startChracter}}}{s_rest}"
             if number != 0:
                 s_sub:str = Name + f"{number}" + "ddot"
             else: 
                 s_sub:str = Name + "ddot"
         else:
-            s:str = s_startChracter + s_rest
+            s = s_startChracter + s_rest
             if number != 0:
                 s_sub:str = Name + f"{number}" + derivativ*"d" + "ot"
             else:

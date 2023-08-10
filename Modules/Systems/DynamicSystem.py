@@ -8,7 +8,6 @@ import sympy as sp
 
 from typing import Any, Union
 
-
 class DynamicSystem(System):
     """Generates a class for a dynamic system with the following structure:
 

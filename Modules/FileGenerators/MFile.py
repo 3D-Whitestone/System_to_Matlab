@@ -5,7 +5,7 @@ import os
 
 
 class MFile(FileGenerator):
-    def __init__(self, Filename:str, Path:str = None) -> None:
+    def __init__(self, Filename:str, Path:str = None) -> None:  # type: ignore
         if not Filename.endswith(".m"):
             Filename += ".m"
         super().__init__(Filename, Path)

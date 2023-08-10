@@ -62,6 +62,7 @@ class MFunction(FileGenerator):
     def generateFile(self, override = True) -> None:
         #if not override and os.path.exists(self._Path + "\\" + self._Filename):
         if not override and os.path.exists(os.path.join(self.path, self.filename)):
+            print("File already exists")
             return
 
         sin = ""
@@ -77,12 +78,12 @@ class MFunction(FileGenerator):
         sbody_bot = ""
         for o in self._Outputs:
             (sheader_temp, sbody_top_temp, sbody_bot_temp) = self._matlab_output_string_generator([o[0]],o[1])  # noqa: E501
-            sheader += sheader_temp
+            sheader += sheader_temp + ","
             sbody_top += sbody_top_temp
             sbody_bot += sbody_bot_temp
 
 
-        self._Elements.append(StringElement("function [" + sheader + "] = " + self._Filename.removesuffix(".m") + "(" + sin +") \n"))
+        self._Elements.append(StringElement("function [" + sheader[:-1] + "] = " + self._Filename.removesuffix(".m") + "(" + sin +") \n"))
         self._Elements.append(StringElement(s_define,1))
         self._Elements.append(StringElement(sbody_top,1))
         
