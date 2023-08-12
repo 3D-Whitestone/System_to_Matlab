@@ -1,0 +1,14 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "System_to_Matlab"
+authors = [{name = "Martin Karlhuber"},]
+description = "With this package you can create Symbolic descriptions of Systems (Sympy / Symengine) and output them in Matlab files"
+requires-python = ">= 3.7"
+version = "0.0.2"
+dependencies = [
+    "sympy",
+	"symengine >= 0.10.0",
+]

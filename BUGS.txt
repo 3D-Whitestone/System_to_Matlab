@@ -8,8 +8,6 @@ Dynamic System write_SFunction doesn't work when there are no parameters
 
 Variable einfügen um definieren zu können ob Files überschrieben werden
 
-Drehmatrix2 Funktion die gleich beide Richtungen der Drehmatrix zurückgibt
-
 -- Behoben linearize ohne Argumente wirft einen Fehler
 
 -- Behoben (Hoffentlich) Fehler beim cse wenn keine Subexpressions gefunden werden wird das clear nicht richtig geschrieben
@@ -19,5 +17,10 @@ Drehmatrix2 Funktion die gleich beide Richtungen der Drehmatrix zurückgibt
 
 
 
+Mögliche Erweiterungen:
 
+CodeElement cse erweitern dass möglichst viele Elementa au einmal optimiert werden, (Alle elemente in eine Liste Schreiben, übergeben und zurück umwandeln)
 
+Generierung von schöneren Standard SteadyState Variablen in der Symbol Klasse. 
+
+Drehmatrix2 Funktion die gleich beide Richtungen der Drehmatrix zurückgibt
