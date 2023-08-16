@@ -62,22 +62,22 @@ class CodeElement(MatlabElement):
         f1, f2 = se.cse(code)
         for temp in f1:
             s += self._Indentation * "\t" + \
-                sp.octave_code(temp[0]) + " = " + \
-                sp.octave_code(temp[1]) + ";\n"  # type: ignore
+                self._remove_curlyBreakets(sp.octave_code(temp[0])) + " = " + \
+                self._remove_curlyBreakets(sp.octave_code(temp[1])) + ";\n"  # type: ignore
         s += "\n"
 
         if shape == (1, 1):
             s += self._Indentation * "\t" + \
-                sp.octave_code(name[0, 0]) + " = " + \
-                sp.octave_code(f2) + ";\n"  # type: ignore
+                self._remove_curlyBreakets(sp.octave_code(name[0, 0])) + " = " + \
+                self._remove_curlyBreakets(sp.octave_code(f2)) + ";\n"  # type: ignore
         else:
-            s += self._Indentation * "\t" + sp.octave_code(name) + " = " + sp.octave_code(
+            s += self._Indentation * "\t" + self._remove_curlyBreakets(sp.octave_code(name)) + " = " + sp.octave_code(
                 se.Matrix(f2).reshape(shape[0], shape[1])) + ";\n"  # type: ignore
         s += "\n"
         if self._Clear:
             s += self._Indentation * "\t" + "clear "
             for temp in f1:
-                s += sp.octave_code(temp[0]) + " "  # type: ignore
+                s += self._remove_curlyBreakets(sp.octave_code(temp[0])) + " "  # type: ignore
             if s.endswith("clear "):
                 s = s[:-6]
             else:
@@ -85,3 +85,8 @@ class CodeElement(MatlabElement):
                 s += ";"
             s += "\n"
         return s
+
+    def _remove_curlyBreakets(self, code: str) -> str:
+        if code.startswith("{") and code.endswith("}"):
+            code = code[1:-1]
+        return code
