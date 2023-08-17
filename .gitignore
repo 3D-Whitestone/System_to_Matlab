@@ -11,6 +11,7 @@ Aufgabe1.ipynb
 .idea
 Tests_private
 BUGS.txt
+generate.bat
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
