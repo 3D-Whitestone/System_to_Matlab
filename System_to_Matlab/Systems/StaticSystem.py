@@ -60,7 +60,12 @@ class StaticSystem(System):
         # self._Outputs.append((output, StaticSymbol(name, len(output)).vars))
         
     def write_MFunctions(self, name:str, path:str = ""):
-        
+        """ Writes the MFunction 
+
+        Args:
+            name (str): Name of the MFunction
+            path (str, optional): Path where the File should be saved . Defaults to "".
+        """
         
         Fdyn = MFunction(name , path)
         for i in self._Inputs:
@@ -82,6 +87,12 @@ class StaticSystem(System):
         Fdyn.generateFile()
 
     def write_init_File(self, name:str, path:str = ""):
+        """Writes the init File for the (Static System) MFunction
+
+        Args:
+            name (str): Name of the init File
+            path (str, optional): Path where the File should be saved. Defaults to "".
+        """
         File = MFile(name, path)
         File.addText(r"%% System parameters")
         File.addText("\n")

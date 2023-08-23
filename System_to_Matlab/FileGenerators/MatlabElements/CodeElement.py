@@ -22,19 +22,19 @@ class CodeElement(MatlabElement):
         if isinstance(name, str):
             name = se.Symbol(name)
             name = se.Matrix([name])
-        elif isinstance(name, list):
-            if isinstance(name[0], str):
-                l = []
-                for na in name:  # type: ignore
-                    l.append(se.Symbol(na))
-                name = se.Matrix(l)
-        elif isinstance(name, (se.Matrix, sp.Matrix)):
-            name = se.sympify(name)
-        elif isinstance(name, (FunctionSymbol, se.Symbol, sp.Function, sp.Symbol)):
-            name = se.Matrix([name])
-        else:
-            # display(type(name))
-            raise TypeError("name must be a string or a list of strings")
+        # elif isinstance(name, list):
+        #     if isinstance(name[0], str):
+        #         l = []
+        #         for na in name:  # type: ignore
+        #             l.append(se.Symbol(na))
+        #         name = se.Matrix(l)
+        # elif isinstance(name, (se.Matrix, sp.Matrix)):
+        #     name = se.sympify(name)
+        # elif isinstance(name, (FunctionSymbol, se.Symbol, sp.Function, sp.Symbol)):
+        #     name = se.Matrix([name])
+        # else:
+        #     # display(type(name))
+        #     raise TypeError("name must be a string or a list of strings")
 
         self._code = code.subs(Symbol._Symbol_to_printable_dict)
         self._name = name.subs(
@@ -49,7 +49,7 @@ class CodeElement(MatlabElement):
         if self._use_cse:
             s += self._generate_cse(self._code, self._name)
         else:
-            s += self._name + " = " + sp.octave_code(self._code) + ";\n"
+            s += self._remove_curlyBreakets(sp.octave_code(self._name)) + " = " + self._remove_curlyBreakets(sp.octave_code(self._code)) + ";\n"
         return s
 
     def _generate_cse(self, code: se.Matrix, name: str) -> str:

@@ -23,6 +23,9 @@ class StaticSymbol(Symbol):
         number_of_variables : int, optional
             Number of variables which should be created, by default 1
         """
+        if not isinstance(Notation, str) or Notation == "" :
+            raise ValueError("Notation must be a non empty string")
+        
         super().__init__(Notation)
         self._number_of_variables = number_of_variables
         self._gen_numbered_state_variables()

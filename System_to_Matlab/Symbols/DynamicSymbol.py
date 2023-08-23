@@ -1,9 +1,6 @@
 from .Symbol import Symbol
 import symengine as se
-import sympy as sp
-from typing import Union, List
-
-from warnings import warn
+from typing import Union, List, Any
 
 
 class DynamicSymbol(Symbol):
@@ -46,6 +43,8 @@ class DynamicSymbol(Symbol):
         """
         if number_of_variables <= 0:
             raise ValueError("number of variables has to be greater than 0")
+        if Notation == "" or isinstance(Notation, str) == False:
+            raise ValueError("Notation has to be a non empty string")
         super().__init__(Notation)
         self._number_of_variables = number_of_variables
         self._number_of_derivatives = number_of_derivatives
@@ -157,7 +156,7 @@ class DynamicSymbol(Symbol):
         return se.Matrix(self._Symbols).reshape(self._number_of_variables, self._number_of_derivatives + 1)._repr_latex_()
 
 
-def DynamicSymbols(names: List[str], number_of_variables: int = 1, number_of_derivatives: int = 0, as_matrix_list = False) -> List[DynamicSymbol]:
+def DynamicSymbols(names: List[str], number_of_variables: int = 1, number_of_derivatives: int = 0, as_matrix_list = False) -> Any:
     """ Method to generate a list of DynamicSymbols
 
     Parameters
@@ -173,7 +172,7 @@ def DynamicSymbols(names: List[str], number_of_variables: int = 1, number_of_der
 
     Returns
     -------
-    List[DynamicSymbol]
+    Any
         List of DynamicSymbols or Matrix of DynamicSymbols
     """
     l = []
