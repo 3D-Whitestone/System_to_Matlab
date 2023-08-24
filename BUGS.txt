@@ -1,8 +1,4 @@
-Static System Add Output (name wird noch nicht betrachtet) !!!
-
-
-
-addParameters für StaticSystem entfernen ist eigentlich equivalent zu addInput
+Static System Add Output (name wird noch nicht betrachtet) ??? Nicht Reproduzierbar
 
 Compatabilität mit Sympy verbessern, (Sympy variablen bei Static Symstem ...)
 
@@ -11,6 +7,8 @@ Dynamic System write_SFunction doesn't work when there are no parameters
 Variable einfügen um definieren zu können ob Files überschrieben werden
 
 Behoben:
+
+-- addParameters für StaticSystem entfernen ist eigentlich equivalent zu addInput
 
 -- StaticSymbols (StaticSymbols(["w","kp","ki","kd","Td","s"])) erstellt die Variablen nur mit dem Ersten Buchstaben (ki kp und kd sind alle k)
 

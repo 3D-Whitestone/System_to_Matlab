@@ -17,9 +17,12 @@ class StaticSystem(System):
         """Adding an Equation to the System. Has to have the form name = rhs.
             name hast to be a Symbol or a string which can be converted to a Symbol
 
-        Args:
-            rhs (se.Expr): calculation which should be added to the system
-            name (Union[str, se.Symbol]): name of the variable calculated in the equation
+        Parameters
+        ----------
+        rhs : se.Expr
+            The calculation to be added to the system.
+        name : Union[str, se.Symbol]
+            The name of the variable calculated in the equation. Must be a Symbol or a string that can be converted to a Symbol.
         """
         if type(name) == str:
             name = StaticSymbol(name).vars
@@ -29,8 +32,10 @@ class StaticSystem(System):
     def addInput(self, input: Any, name: str) -> None:
         """Adds an input to the system
 
-        Args:
-            input (Any): input which should be added to the system, has to be an expressions or a Matrix of expressions
+        Parameters
+        ----------
+        input : Any
+            The input to be added to the system. Must be an expression or a matrix of expressions.
         """
         # self._Inputs.append((input, StaticSymbol(name, len(input)).vars))
         self._Inputs.append((input, name))
@@ -38,9 +43,12 @@ class StaticSystem(System):
     def addOutput(self, output: Union[se.Expr, se.Matrix], name: str) -> None:
         """Adds an output to the system y = f(x), this output can only use values defined as an input or as a parameter
 
-        Args:
-            output (Union[se.Expr, se.Matrix]): output which should be added to the system, has to be an expressions or a Matrix of expressions
-            name (str): name of the output
+        Parameters
+        ----------
+        output : Union[se.Expr, se.Matrix]
+            The output to be added to the system. Must be an expression or a matrix of expressions.
+        name : str
+            The name of the output.
         """
         output = se.sympify(output)
         
@@ -58,12 +66,17 @@ class StaticSystem(System):
         self._Outputs.append((output, name))
         # self._Outputs.append((output, StaticSymbol(name, len(output)).vars))
         
-    def write_MFunctions(self, name:str, path:str = ""):
+    def write_MFunctions(self, name:str, path:str = "", override:bool = True):
         """ Writes the MFunction 
 
-        Args:
-            name (str): Name of the MFunction
-            path (str, optional): Path where the File should be saved . Defaults to "".
+        Parameters
+        ----------
+        name : str:
+            Name of the MFunction
+        path : str, optional
+            Path where the File should be saved . Defaults to "".
+        override : bool, optional
+            If the File should be overwritten if it already exists. Defaults to True.
         """
         
         Fdyn = MFunction(name , path)
@@ -85,12 +98,17 @@ class StaticSystem(System):
         # Fdyn.addParameters(self._Parameters)
         Fdyn.generateFile()
 
-    def write_init_File(self, name:str, path:str = ""):
+    def write_init_File(self, name:str, path:str = "", override:bool = True):
         """Writes the init File for the (Static System) MFunction
 
-        Args:
-            name (str): Name of the init File
-            path (str, optional): Path where the File should be saved. Defaults to "".
+        Parameters
+        ----------
+        name : str
+            The name of the init file.
+        path : str, optional
+            The path where the file should be saved. Defaults to "".
+        override : bool, optional
+            If True, the file will be overwritten if it already exists. Defaults to True.
         """
         File = MFile(name, path)
         File.addText(r"%% System parameters")
@@ -101,4 +119,4 @@ class StaticSystem(System):
             
         File.addText(r"params = [" + ", ".join([str(sp.octave_code(para[0].subs(Symbol._Symbol_to_printable_dict))) for para in self._Parameters]) + "]; \n \n")
         File.addText(r"%% Initial conditions" + "\n")
-        File.generateFile()
+        File.generateFile(override)
