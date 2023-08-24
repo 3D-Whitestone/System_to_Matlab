@@ -60,7 +60,7 @@ class Symbol(ABC):
             s_tiefgestellt = ""
         
         if derivativ == 0:
-            s = s_startChracter
+            s = s_startChracter  + s_rest
             if number != 0:
                 s_sub:str = Name + f"{number}"
             else:

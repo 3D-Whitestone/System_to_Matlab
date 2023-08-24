@@ -1,8 +1,6 @@
 Static System Add Output (name wird noch nicht betrachtet) !!!
 
-CodeElement Fehler wenn kein cse verwendet wird
 
-StaticSymbols (StaticSymbols(["w","kp","ki","kd","Td","s"])) erstellt die Variablen nur mit dem Ersten Buchstaben (ki kp und kd sind alle k)
 
 addParameters für StaticSystem entfernen ist eigentlich equivalent zu addInput
 
@@ -12,11 +10,17 @@ Dynamic System write_SFunction doesn't work when there are no parameters
 
 Variable einfügen um definieren zu können ob Files überschrieben werden
 
--- Behoben linearize ohne Argumente wirft einen Fehler
+Behoben:
 
--- Behoben (Hoffentlich) Fehler beim cse wenn keine Subexpressions gefunden werden wird das clear nicht richtig geschrieben
+-- StaticSymbols (StaticSymbols(["w","kp","ki","kd","Td","s"])) erstellt die Variablen nur mit dem Ersten Buchstaben (ki kp und kd sind alle k)
 
--- Behoben addParameters in the MFunction mach keinen sinn da sie niergens verwendet werden
+-- CodeElement Fehler wenn kein cse verwendet wird
+
+-- linearize ohne Argumente wirft einen Fehler
+
+-- Fehler beim cse wenn keine Subexpressions gefunden werden wird das clear nicht richtig geschrieben
+
+-- addParameters in the MFunction mach keinen sinn da sie niergens verwendet werden
 
 
 

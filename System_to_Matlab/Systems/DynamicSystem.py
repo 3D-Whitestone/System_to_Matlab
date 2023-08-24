@@ -211,7 +211,24 @@ class DynamicSystem(System):
                 self._Equations[1] = self._Equations[1].col_join(se.Matrix([output]))
         
         self._Outputs.append((output, StaticSymbol(name, len(output)).vars))
+    
+    def addParameter(self, parameter: Any, values = 0) -> None:
+        """adds a parameter to the system
+
+        Args:
+            parameter (Any): parameter which should be added to the system, has to be a symbol or a Matrix of symbols
+            
+            values (Union[None, Any], optional): values for the parameter. Either a list or a column Matrix.
+            Defaults to None.
+        """
+        parameter = list(parameter)
+        if values == 0:
+            values = list(0 for i in range(len(parameter)))
+        if len(parameter) != len(values):
+            raise ValueError("Number of parameters and values does not match")
         
+        self._Parameters.extend(list(zip(parameter, values)))
+    
     def write_ABCD_to_File(self, name:str, path:str = ""):
         """writes the ABCD Matrizes of the linearized system to a matlab file
 
