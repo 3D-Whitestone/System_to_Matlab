@@ -8,7 +8,7 @@ Aufgabe_1.2/
 Test_System/
 Aufgabe1.ipynb
 .pytest_cache
-.idea
+.idea/
 Tests_private
 BUGS.txt
 generate.bat
