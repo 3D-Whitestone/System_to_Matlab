@@ -92,6 +92,13 @@ class DynamicSystem(System):
     
     @property
     def x_dot(self) -> se.Matrix:
+        """vector of the derivatives of the state variables
+
+        Returns
+        -------
+        se.Matrix
+            vector of the derivatives of the state variables
+        """
         return se.Matrix([se.diff(x, DynamicSymbol._derivation_variable).subs(DynamicSymbol._dict_of_derivation_for_substitutions) for x in self.x])
     
     @property
@@ -118,8 +125,10 @@ class DynamicSystem(System):
         ----------
         steady_state_state_vec : se.Matrix, optional
             vector of variables which should be used in the steady state, by default None
+            Can be omitted if the steady state is 0
         steady_state_input_vec : se.Matrix, optional
             vector of input variables which should be used in the strady state , by default None
+            Can be omitted if the steady state is 0
 
         Returns
         -------
@@ -182,7 +191,7 @@ class DynamicSystem(System):
         # maybe add warning if equations are already set
         self._Equations[0] = equations
   
-    def addInput(self, input: Any, name: str) -> None:
+    def addInput(self, input: Any) -> None:
         """Adds an input to the system
 
         Args:
@@ -213,7 +222,7 @@ class DynamicSystem(System):
         self._Outputs.append((output, StaticSymbol(name, len(output)).vars))
     
     def addParameter(self, parameter: Any, values = 0) -> None:
-        """adds a parameter to the system
+        """adds a parameter to the System. If values are provided then the init file will include them if not they will be set to 0.
 
         Args:
             parameter (Any): parameter which should be added to the system, has to be a symbol or a Matrix of symbols
@@ -229,7 +238,7 @@ class DynamicSystem(System):
         
         self._Parameters.extend(list(zip(parameter, values)))
     
-    def write_ABCD_to_File(self, name:str, path:str = "", override:bool = True):
+    def write_ABCD_to_File(self, name:str, path:str = "", overwrite:bool = True):
         """writes the ABCD Matrizes of the linearized system to a matlab file
 
         Parameters
@@ -238,7 +247,7 @@ class DynamicSystem(System):
             Name of the file
         path : str, optional
             Path in which the file should be saved, by default ""
-        override : bool, optional
+        overwrite : bool, optional
             If true, the file will be overwritten if it already exists, by default True
         """
         File = MFile(name, path)
@@ -246,10 +255,10 @@ class DynamicSystem(System):
         File.addMathExpression(self._B, "B")
         File.addMathExpression(self._C, "C")
         File.addMathExpression(self._D, "D")
-        File.generateFile(override)
+        File.generateFile(overwrite)
         pass
     
-    def write_init_File(self, name:str, path:str = "", override:bool = True):
+    def write_init_File(self, name:str, path:str = "", overwrite:bool = True):
         """writes an init file for the Parameters and the initial conditions of the system
 
         Parameters
@@ -258,7 +267,7 @@ class DynamicSystem(System):
             Name of the file
         path : str, optional
             Path where the file should be saved, by default ""
-        override : bool, optional
+        overwrite : bool, optional
             If true, the file will be overwritten if it already exists, by default True
         """
         File = MFile(name, path)
@@ -271,9 +280,9 @@ class DynamicSystem(System):
         File.addText(r"params = [" + ", ".join([sp.octave_code(para[0].subs(Symbol._Symbol_to_printable_dict)) for para in self._Parameters]) + "]; \n \n") # type: ignore
         File.addText(r"%% Initial conditions" + "\n")
         File.addText("x_ic = " + str(sp.octave_code(self._x * 0)) + ";\n")
-        File.generateFile(override)
+        File.generateFile(overwrite)
     
-    def write_SFunction(self, name:str, path:str = "", override:bool = True):
+    def write_SFunction(self, name:str, path:str = "", overwrite:bool = True):
         """writes the nonlinear system as a SFunction to a matlab file
 
         Parameters
@@ -282,7 +291,7 @@ class DynamicSystem(System):
             Name of the file
         path : str, optional
             Path where the file should be stored, by default ""
-        override : bool, optional
+        overwrite : bool, optional
             If true, the file will be overwritten if it already exists, by default True
         """
         File = SFunction(name, path)
@@ -291,9 +300,9 @@ class DynamicSystem(System):
         for inp in self._Inputs:
             File.addInput(inp)
         File.addParameter(self._Parameters) 
-        File.generateFile(override)
+        File.generateFile(overwrite)
     
-    def write_MFunctions(self, name:str, path:str = "", override:bool = True):
+    def write_MFunctions(self, name:str, path:str = "", overwrite:bool = True):
         """write the nonlinear system as two MFunctions to a matlab file
 
         Parameters
@@ -302,7 +311,7 @@ class DynamicSystem(System):
             Name of the files
         path : str, optional
             Path where the files should be saved, by default ""
-        override : bool, optional
+        overwrite : bool, optional
             If true, the files will be overwritten if they already exist, by default True
         """
         Fdyn = MFunction(name + "_dyn", path)
@@ -315,14 +324,14 @@ class DynamicSystem(System):
         Fdyn.addOutput(self.x_dot, "xdot")
         Fdyn.addEquations(self._Equations[0], self.x_dot)
         
-        Fdyn.generateFile(override)
+        Fdyn.generateFile(overwrite)
         
         Fout = MFunction(name + "_out", path)
         Fout.addInput(self.x, "x")
         Fout.addInput(pars, "params")
         Fout.addOutput(self.y, "y")
         Fout.addEquations(self._Equations[1], self.y)
-        Fout.generateFile(override)
+        Fout.generateFile(overwrite)
     
     def _create_symbolic_steady_state_state_vector(self) -> se.Matrix:
         return se.Matrix([se.Symbol("x_{" + str(i) + "ss}") for i in range(len(self.x))])

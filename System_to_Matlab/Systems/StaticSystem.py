@@ -5,7 +5,7 @@ from ..FileGenerators import MFile, MFunction
 
 import symengine as se
 import sympy as sp
-from typing import Any, Union
+from typing import Any, Union, List
 
 
 class StaticSystem(System):
@@ -13,7 +13,7 @@ class StaticSystem(System):
         super().__init__()
         self._Equations = []
         
-    def addAdditionalEquation(self, rhs: se.Expr, name: Union[str, se.Symbol]) -> None:
+    def addAdditionalEquation(self, rhs: se.Expr, name: Union[str, se.Symbol, List[str]]) -> None:
         """Adding an Equation to the System. Has to have the form name = rhs.
             name hast to be a Symbol or a string which can be converted to a Symbol
 
@@ -21,12 +21,10 @@ class StaticSystem(System):
         ----------
         rhs : se.Expr
             The calculation to be added to the system.
-        name : Union[str, se.Symbol]
+        name : Union[str, se.Symbol, List[str]]
             The name of the variable calculated in the equation. Must be a Symbol or a string that can be converted to a Symbol.
         """
-        if type(name) == str:
-            name = StaticSymbol(name).vars
-        
+    
         self._Equations.append((rhs, name))
     
     def addInput(self, input: Any, name: str) -> None:
@@ -52,21 +50,10 @@ class StaticSystem(System):
         """
         output = se.sympify(output)
         
-        #if self._Equations[1] is None:
-        #    if type(output) == se.Matrix:
-        #        self._Equations[1] = output
-        #    else:
-        #        self._Equations[1] = se.Matrix([output])
-        #else:
-        #    if type(output) == se.Matrix:
-        #        self._Equations[1] = self._Equations[1].col_join(output)
-        #    else:
-        #        self._Equations[1] = self._Equations[1].col_join(se.Matrix([output]))
-        
         self._Outputs.append((output, name))
         # self._Outputs.append((output, StaticSymbol(name, len(output)).vars))
         
-    def write_MFunctions(self, name:str, path:str = "", override:bool = True):
+    def write_MFunctions(self, name:str, path:str = "", overwrite:bool = True):
         """ Writes the MFunction 
 
         Parameters
@@ -75,7 +62,7 @@ class StaticSystem(System):
             Name of the MFunction
         path : str, optional
             Path where the File should be saved . Defaults to "".
-        override : bool, optional
+        overwrite : bool, optional
             If the File should be overwritten if it already exists. Defaults to True.
         """
         
@@ -98,7 +85,7 @@ class StaticSystem(System):
         # Fdyn.addParameters(self._Parameters)
         Fdyn.generateFile()
 
-    def write_init_File(self, name:str, path:str = "", override:bool = True):
+    def write_init_File(self, name:str, path:str = "", overwrite:bool = True):
         """Writes the init File for the (Static System) MFunction
 
         Parameters
@@ -107,7 +94,7 @@ class StaticSystem(System):
             The name of the init file.
         path : str, optional
             The path where the file should be saved. Defaults to "".
-        override : bool, optional
+        overwrite : bool, optional
             If True, the file will be overwritten if it already exists. Defaults to True.
         """
         File = MFile(name, path)
@@ -119,4 +106,4 @@ class StaticSystem(System):
             
         File.addText(r"params = [" + ", ".join([str(sp.octave_code(para[0].subs(Symbol._Symbol_to_printable_dict))) for para in self._Parameters]) + "]; \n \n")
         File.addText(r"%% Initial conditions" + "\n")
-        File.generateFile(override)
+        File.generateFile(overwrite)

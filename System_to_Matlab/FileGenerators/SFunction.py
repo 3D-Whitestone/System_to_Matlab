@@ -4,9 +4,19 @@ from .MatlabElements import CodeElement, StringElement
 import os
 import symengine as se
 
-class SFunction(FileGenerator):
+from typing import Any, Union
 
+class SFunction(FileGenerator):
     def __init__(self, Filename: str, Path: str = "") -> None:
+        """ Generates an instance of the SFunction class.
+
+        Parameters
+        ----------
+        Filename : str
+            The name of the file to be generated. If the file does not end with .m, it will be added.
+        Path : str, optional
+            Path in which the file should me saved if non is given the current path is used , by default ""
+        """
         if not Filename.endswith(".m"):
             Filename += ".m"
         super().__init__(Filename, Path)
@@ -17,7 +27,21 @@ class SFunction(FileGenerator):
         self._Inputs = []
         self._Parameters = []
 
-    def addState(self, state,  equation) -> None:
+    def addState(self, state: Union[se.Matrix, list],  equation: Union[se.Matrix, list]) -> None:
+        """Adding the state to the SFunction
+
+        Parameters
+        ----------
+        state : se.Matrix or list
+            State of a system, can be a list of states or a matrix of states.
+        equation : se.Matrix or list
+            equations to calculate the derivative of the state, can be a list of equations or a matrix of equations
+
+        Raises
+        ------
+        ValueError
+            Raised if the number o states and equations does not match or if the states and equations are not column vectors.
+        """
         if type(state) != se.Matrix:
             state == se.Matrix(state)
         if type(equation) != se.Matrix:
@@ -32,26 +56,47 @@ class SFunction(FileGenerator):
             self._States.append(st)
 
     def addOutput(self, equation) -> None:
-        if type(equation) == list:
+        """Adding the output to the SFunction
+
+        Parameters
+        ----------
+        equation : _type_
+            equations to calculate the output, can be a list of equations or a matrix of equations
+        """
+        if isinstance(equation, list):
             for eq in equation:
                 self._Outputs.append(eq)
-        elif type(equation) == se.Matrix and equation.shape[1] == 1:
+        elif isinstance(equation, se.Matrix) and equation.shape[1] == 1:
             for eq in equation:
                 self._Outputs.append(eq)
         else:
             self._Outputs.append(equation)
     
     def addInput(self, input) -> None:
-        if type(input) == list:
+        """Adding the input to the SFunction
+
+        Parameters
+        ----------
+        input : _type_
+            input of the system, can be a list of inputs or a matrix of inputs
+        """
+        if isinstance(input, list):
             for inp in input:
                 self._Inputs.append(inp)
-        elif type(input) == se.Matrix and input.shape[1] == 1:
+        elif isinstance(input, se.Matrix) and input.shape[1] == 1:
             for inp in input:
                 self._Inputs.append(inp)
         else:
             self._Inputs.append(input)
      
     def addParameter(self, parameter) -> None:
+        """Adding the parameter to the SFunction. All values which are constants in Matlab should be defined as parameters. (They will be defined in the ini file)
+
+        Parameters
+        ----------
+        parameter : _type_
+            parameter of the system, can be a list of parameters or a matrix of parameters
+        """
         if type(parameter) == list:
             for para in parameter:
                 self._Parameters.append(para)
@@ -62,13 +107,28 @@ class SFunction(FileGenerator):
             self._Parameters.append(parameter)
     
     def _Parameter_Input_String(self) -> str:
+        """PRIVATE Generates the string for the parameters and inputs of the SFunction
+
+        Returns
+        -------
+        str
+            String for the parameters and inputs of the SFunction
+        """
         s = list(se.Matrix(self._Parameters)[:,0])
         s = self._matlab_input_string_generator([s],"params", 2)[1]
         s += self._matlab_input_string_generator(self._Inputs,"u", 2)[1]
         return s
     
-    def generateFile(self, override = True) -> None:
-        if not override and os.path.exists(self._Path + "\\" + self._Filename):
+    def generateFile(self, overwrite = True) -> None:
+        """Generates the file with the given name and path. If the file already exists, it will be overwritten. (If you don't want to overwrite the file, set overwrite to False)
+
+        Parameters
+        ----------
+        overwrite : bool, optional
+            Defines if the file should be overwritten, by default True
+        """
+        
+        if not overwrite and os.path.exists(self._Path + "\\" + self._Filename):
             return
         i = 0
         

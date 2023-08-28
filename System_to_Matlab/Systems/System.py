@@ -10,7 +10,6 @@ class System(ABC):
         self._Inputs: list = []
         self._Outputs: list = []
 
-    
         
     @abstractmethod 
     def addInput(self, input: Any, name:str) -> None:

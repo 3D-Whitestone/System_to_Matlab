@@ -19,6 +19,15 @@ class MFunction(FileGenerator):
         _Equations (Tuple[se.Matrix, se.Matrix]): A tuple representing the equations of the function.
     """
     def __init__(self, filename:str, path:str = "") -> None:
+        """Generates an instance of the MFunction class.
+
+        Parameters
+        ----------
+        filename : str
+            The name of the file to be generated. If the file does not end with .m, it will be added.
+        path : str, optional
+            Path in which the file should be saved , by default ""
+        """
         if not filename.endswith(".m"):
             filename += ".m"
         super().__init__(filename, path)
@@ -29,9 +38,27 @@ class MFunction(FileGenerator):
         self._Equations = None
         
     def addInput(self, input:Any, name:str) -> None:
+        """Adds an input to the function.
+
+        Parameters
+        ----------
+        input : Any
+            The input to be added. (Must be a symengine object)
+        name : str
+            The name of the input.
+        """
         self._Inputs.append((input, name))
         
     def addOutput(self, output:Any, name:str) -> None:
+        """Adds an output to the function.
+
+        Parameters
+        ----------
+        output : Any
+            The output to be added. (Must be a symengine object)
+        name : str
+            The name of the output.
+        """
         self._Outputs.append((output, name))
 
     #def addParameters(self, parameters: Any) -> None:
@@ -49,19 +76,28 @@ class MFunction(FileGenerator):
         if isinstance(name, str):
             name = se.Symbol(name)
             name = se.Matrix([name])
-        if isinstance(name, list):
-            if isinstance(name[0], str):
-                name = se.Matrix([se.Symbol(na) for na in name])
+        if isinstance(name, list) and isinstance(name[0], str):
+            name = se.Matrix([se.Symbol(na) for na in name])
         
+        if not isinstance(name, se.Matrix, se.Symbol, se.Function):
+            raise TypeError("The name has to be a string, a list of strings, a matrix of strings, a symbol, a list of symbols or a matrix of symbols") 
+    
         if self._Equations is None:
             self._Equations = [name, equations]
         else:
             self._Equations[0].col_join(name)
             self._Equations[1].col_join(equations)
         
-    def generateFile(self, override = True) -> None:
-        #if not override and os.path.exists(self._Path + "\\" + self._Filename):
-        if not override and os.path.exists(os.path.join(self.path, self.filename)):
+    def generateFile(self, overwrite: bool = True) -> None:
+        """Generates the file with the given name and path. If the file already exists, it will be overwritten (if you don't want this to happen set the overwrite to false).
+
+        Parameters
+        ----------
+        overwrite : bool, optional
+            Defines if the file should be overwritten , by default True
+        """
+        #if not overwrite and os.path.exists(self._Path + "\\" + self._Filename):
+        if not overwrite and os.path.exists(os.path.join(self.path, self.filename)):
             print("File already exists")
             return
 
