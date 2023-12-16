@@ -11,7 +11,7 @@ from typing import Any, Union, List
 class StaticSystem(System):
     def __init__(self) -> None:
         super().__init__()
-        self._Equations = []
+        # self._Equations = []
         
     def addAdditionalEquation(self, rhs: se.Expr, name: Union[str, se.Symbol, List[str]]) -> None:
         """Adding an Equation to the System. Has to have the form name = rhs.

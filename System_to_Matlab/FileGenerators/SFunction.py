@@ -184,7 +184,10 @@ class SFunction(FileGenerator):
         if self._Path is None or self._Path == "":
             path = self._Filename
         else:
-            path = self._Path + "\\" + self._Filename
+            if self._Path.endswith("\\"):
+                path = self._Path + self._Filename
+            else:
+                path = self._Path + "\\" + self._Filename
         with open(path, "w") as f:
             for element in self._Elements:
                 f.write(element.generateCode())

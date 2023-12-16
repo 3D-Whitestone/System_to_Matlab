@@ -3,6 +3,8 @@ from typing import Any
 
 
 class System(ABC):
+    """Abstract base class for all systems.
+    """
     def __init__(self) -> None:
         super().__init__()
         self._Equations: list = []

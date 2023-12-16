@@ -4,7 +4,6 @@ from ...Symbols.Symbol import Symbol
 
 
 import symengine as se
-from symengine.lib.symengine_wrapper import FunctionSymbol
 import sympy as sp
 
 from typing import Union, Any
@@ -12,6 +11,21 @@ from typing import Union, Any
 
 class CodeElement(MatlabElement):
     def __init__(self, code, name: str, indent: int = 0,  use_cse: bool = True, clear: bool = True):
+        """ Code Element for the Matlab File Generator. Represents a chunk of code. Can also use cse to make the code more efficient.
+
+        Parameters
+        ----------
+        code : list, se.Matrix
+            code which should be generated
+        name : str oo se.Symbol
+            Name of the varibal in which the result of the code should be stored
+        indent : int, optional
+            how much indents should be added at the front of every line, by default 0
+        use_cse : bool, optional
+            Sets if cse should be used on the code, by default True
+        clear : bool, optional
+            sets if the variables from cse should be cleared afterwards, by default True
+        """
         MatlabElement.__init__(self)
 
         if not isinstance(code, (list, se.Matrix)):
@@ -22,19 +36,9 @@ class CodeElement(MatlabElement):
         if isinstance(name, str):
             name = se.Symbol(name)
             name = se.Matrix([name])
-        # elif isinstance(name, list):
-        #     if isinstance(name[0], str):
-        #         l = []
-        #         for na in name:  # type: ignore
-        #             l.append(se.Symbol(na))
-        #         name = se.Matrix(l)
-        # elif isinstance(name, (se.Matrix, sp.Matrix)):
-        #     name = se.sympify(name)
-        # elif isinstance(name, (FunctionSymbol, se.Symbol, sp.Function, sp.Symbol)):
-        #     name = se.Matrix([name])
-        # else:
-        #     # display(type(name))
-        #     raise TypeError("name must be a string or a list of strings")
+        if isinstance(name, se.Symbol):
+            name = se.Matrix([name])
+            
 
         self._code = code.subs(Symbol._Symbol_to_printable_dict)
         self._name = name.subs(

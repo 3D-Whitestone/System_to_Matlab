@@ -6,6 +6,8 @@ Dynamic System write_SFunction doesn't work when there are no parameters
 
 Variable einfügen um definieren zu können ob Files überschrieben werden
 
+!! Fehler beim generieren von M-functions von einem System
+
 Behoben:
 
 -- addParameters für StaticSystem entfernen ist eigentlich equivalent zu addInput
