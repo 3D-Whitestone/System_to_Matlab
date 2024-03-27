@@ -1,17 +1,21 @@
 */__pycache__/*
 .vscode
-*.m
 *.pdf
 *.pyc
 *.txt
 Aufgabe_1.2/
-Test_System/
 Aufgabe1.ipynb
 .pytest_cache
 .idea/
 Tests_private
 BUGS.txt
 generate.bat
+IGNORE*.*
+*.srctrlbm
+*.srctrldb
+*.srctrlprj
+
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

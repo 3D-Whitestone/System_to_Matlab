@@ -1,5 +1,6 @@
 from .FileGenerators import FileGenerator
 from .MatlabElements import CodeElement, StringElement
+from ..Calculation.Calculation import Calculation
 import os
 
 
@@ -30,19 +31,17 @@ class MFile(FileGenerator):
         """
         self._Elements.append(StringElement(text))
         
-    def addMathExpression(self, expression, name: str , use_cse: bool = True) -> None:
+    def addCalculation(self, calculation: Calculation, use_cse: bool = True) -> None:
         """Adds a math expression to the file.
 
         Parameters
         ----------
-        expression : _type_
-            The math expression to be added.
-        name : str
-            The name of the variable that will be assigned to the expression.
+       calculation: Calculation
+            calculation to be added
         use_cse : bool, optional
             Whether to use common subexpression elimination, by default True
         """
-        self._Elements.append(CodeElement(expression, name, use_cse))
+        self._Elements.append(CodeElement(calculation, use_cse))
     
     def generateFile(self, overwrite: bool = True) -> None:
         """Generates the file with the given name and path. If the file already exists, it will be overwritten.

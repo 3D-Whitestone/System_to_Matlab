@@ -1,14 +1,15 @@
-from .System import System
+#from .System import System
 from ..Symbols import DynamicSymbol, StaticSymbol
 from ..Symbols.Symbol import Symbol
 from ..FileGenerators import MFile, MFunction, SFunction
+from ..Calculation.Calculation import Calculation
 
 import symengine as se
 import sympy as sp
 
 from typing import Any, Union
 
-class DynamicSystem(System):
+class DynamicSystem():
     """Generates a class for a dynamic system with the following structure:
 
         Args:
@@ -30,7 +31,6 @@ class DynamicSystem(System):
             ValueError: state vector is no column vector
             ValueError: input vector is no column vector
         """
-        super().__init__()
         self._is_linearized = False
         if x.shape[1] != 1:
             raise ValueError("State vector has to be a column vector")
@@ -38,7 +38,16 @@ class DynamicSystem(System):
             raise ValueError("Input vector has to be a column vector")
         self._x = se.sympify(x)
         self._u = se.sympify(u)
-        self._Equations = [None, None]
+        self._State_Equations: Calculation = Calculation()
+        # self._Calcs: Calculation = Calculation()
+        self._Outputs: list[se.Symbols | se.Function] = []
+        self._Outputs_Calcs: Calculation = Calculation()
+        self._Inputs: list[se.Symbols | se.Function] = [se.Symbol("u")]
+        self._Input_Calcs: Calculation = Calculation()
+
+        self._Input_Calcs.addCalculation(self._u, se.Symbol('u'),is_matrix_input=True)
+        
+        self._Parameters: list[se.Symbol | se.Function] = []
     
     @property
     def A(self) -> se.Matrix:
@@ -110,13 +119,8 @@ class DynamicSystem(System):
         se.Matrix
             vector of the output functions
         """
-        l = None
-        for i in self._Outputs:
-            if l is None:
-                l = i[1]
-            else:
-                l = l.col_join(i[1])
-        return l
+        _ , vec = self._Outputs_Calcs._generate_shape_index_list()
+        return vec
     
     def linearize(self, steady_state_state_vec: se.Matrix = None, steady_state_input_vec: se.Matrix = None) -> list[se.Matrix]:
         """ linearizes the system around a given steady state
@@ -142,7 +146,7 @@ class DynamicSystem(System):
         """
         
         
-        if self._Equations[0] is None or self._Equations[1] is None:
+        if len(self._State_Equations.calcs) == 0 or len(self._Outputs_Calcs.calcs) == 0:
             raise ValueError("State and output equations have to be set before linearization")
         
         if steady_state_state_vec is None:
@@ -155,10 +159,10 @@ class DynamicSystem(System):
             raise ValueError(
                 "Size of steady_state hast to be equal to the size of the state vector x")
 
-        self._A: se.Matrix = self._Equations[0].jacobian(self.x)
-        self._B: se.Matrix = self._Equations[0].jacobian(self.u)
-        self._C: se.Matrix = self._Equations[1].jacobian(self.x)
-        self._D: se.Matrix = self._Equations[1].jacobian(self.u)
+        self._A: se.Matrix = self._State_Equations._generate_shape_index_list()[1].jacobian(self.x)
+        self._B: se.Matrix = self._State_Equations._generate_shape_index_list()[1].jacobian(self.u)
+        self._C: se.Matrix = self._Outputs_Calcs._generate_shape_index_list()[1].jacobian(self.x)
+        self._D: se.Matrix = self._Outputs_Calcs._generate_shape_index_list()[1].jacobian(self.u)
 
         for i in range(len(self.x)):
             self._A = self._A.subs(self.x[i], steady_state_state_vec[i])
@@ -177,51 +181,90 @@ class DynamicSystem(System):
         
         return [self._A, self._B, self._C, self._D]
 
-    def addStateEquations(self, equations: se.Matrix) -> None:
+    def addStateEquations(self, equations: se.Matrix ) -> None:
         """adding the equations for the states of the system x_dot = f(x, u)
 
         Args:
             equation (se.Matrix): Matrix of the expressions corresponding to the system states
         """
-        if equations.shape[1] != 1:
-            raise ValueError("Equations have to be a column vector")
-        if equations.shape[0] != self.x.shape[0]:
-            raise ValueError("Number of equations has to be equal to the number of states")
-        
-        # maybe add warning if equations are already set
-        self._Equations[0] = equations
-  
-    def addInput(self, input: Any) -> None:
-        """Adds an input to the system
-
-        Args:
-            input (Any): input which should be added to the system, has to be an expressions or a Matrix of expressions
-        """
-        self._Inputs.append(input)  
-    
-    def addOutput(self, output: Union[se.Expr, se.Matrix], name: str) -> None:
-        """Adds an output to the system y = h(x,u)
-
-        Args:
-            output (Union[se.Expr, se.Matrix]): output which should be added to the system, has to be an expressions or a Matrix of expressions
-            name (str): name of the output
-        """
-        output = se.sympify(output)
-        
-        if self._Equations[1] is None:
-            if type(output) == se.Matrix:
-                self._Equations[1] = output
-            else:
-                self._Equations[1] = se.Matrix([output])
+        if isinstance(equations, se.Matrix):
+            if equations.shape[1] != 1:
+                raise ValueError("Equations have to be a column vector")
+            if equations.shape[0] != self.x.shape[0]:
+                raise ValueError("Number of equations has to be equal to the number of states")
         else:
-            if type(output) == se.Matrix:
-                self._Equations[1] = self._Equations[1].col_join(output)
-            else:
-                self._Equations[1] = self._Equations[1].col_join(se.Matrix([output]))
+            raise TypeError("Equations have to be a Matrix")
         
-        self._Outputs.append((output, StaticSymbol(name, len(output)).vars))
+        if len(self._State_Equations.calcs) != 0:
+            raise ValueError("State equations are already set")
+        self._State_Equations.addCalculation(self.x_dot, equations)
+        self._number_of_states = equations.shape[0]
+  
+    # def addInput(self, input: se.Symbol | se.Function | se.Matrix, name: str | se.Symbol = "") -> None:
+    #     """Adds an aditional input to the System.
+    #     Not needed normally, standard inputs should be given when initializing the System.
+    #     (Inputs which do not change should be included via the parameters)
+    #     When a name is given the given Symbol/Matrix will be outputed with the given name.
+    #     Names are not used in the S-Function 
+    #         --(order of the input vector must be the same as here)
+    #         --(if you input multiple inputs the order is also the same)
+    #     ----------
+    #     input : se.Symbol | se.Function | se.Matrix
+    #         The input to be added.
+    #     name : str, optional
+    #         The name of the input. If non is given the name of the Symbol itself is used. Defaults to "".
+    #     """
+        
+    #     if isinstance(input, se.Matrix):
+    #         if name == "":
+    #             raise ValueError("Matrix inputs have to have a name")
+    #         is_input_matrix = True
+    #     else:
+    #         is_input_matrix = False
+        
+    #     if name == "":
+    #         self._Inputs.append(input)
+    #     else:
+    #         self._Inputs.append(se.Symbol(name))
+    #         self._Input_Calcs.addCalculation(input, se.Symbol(name),is_matrix_input=is_input_matrix)
+        
     
-    def addParameter(self, parameter: Any, values = 0) -> None:
+    def addCalculation(self, name: Union[str, se.Symbol, list[str], Calculation], rhs: se.Expr = None) -> None:
+        """Adding an Calculation to the System. Should be used if you want to add some Output equations in the form y = f(x) 
+        Has to have the form name = rhs.
+            name hast to be a Symbol or a string which can be converted to a Symbol
+        Parameters
+        ----------
+        name : Union[str, se.Symbol, list[str]]
+            Can be an Calculation object or,
+            the name of the variable calculated in the equation. Must be a Symbol or a string that can be converted to a Symbol. 
+        rhs : se.Expr, optional
+            The calculation to be added to the system. Defaults to None.
+        """
+
+        if isinstance(name, Calculation):
+            self._Outputs_Calcs.append_Calculation(name)
+        else:
+            calc = Calculation()
+            calc.addCalculation(name, rhs)
+            self._Outputs_Calcs.addCalculation(name, rhs)
+
+    def addOutput(self, output: se.Symbol | se.Function, name: str = "") -> None:
+        """Adds an output to the System.
+        When a name is given the given Symbol will be outputed with the given name.
+        ----------
+        output : se.Symbol | se.Function
+            The output to be added.
+        name : str, optional
+            The name of the output. Defaults to "".
+        """
+        if name == "":
+            self._Outputs.append(output)
+        else:
+            self._Outputs.append(se.Symbol(name))
+            self._Outputs_Calcs.addCalculation(se.Symbol(name), output)
+    
+    def addParameter(self, parameter: Any, values:list|int = 0) -> None:
         """adds a parameter to the System. If values are provided then the init file will include them if not they will be set to 0.
 
         Args:
@@ -251,12 +294,13 @@ class DynamicSystem(System):
             If true, the file will be overwritten if it already exists, by default True
         """
         File = MFile(name, path)
-        File.addMathExpression(self._A, "A")
-        File.addMathExpression(self._B, "B")
-        File.addMathExpression(self._C, "C")
-        File.addMathExpression(self._D, "D")
+        ABCD_calc = Calculation()
+        ABCD_calc.addCalculation(se.Symbol("A"), self._A)
+        ABCD_calc.addCalculation(se.Symbol("B"), self._B)
+        ABCD_calc.addCalculation(se.Symbol("C"), self._C)
+        ABCD_calc.addCalculation(se.Symbol("D"), self._D)
+        File.addCalculation(ABCD_calc)
         File.generateFile(overwrite)
-        pass
     
     def write_init_File(self, name:str, path:str = "", overwrite:bool = True):
         """writes an init file for the Parameters and the initial conditions of the system
@@ -295,10 +339,12 @@ class DynamicSystem(System):
             If true, the file will be overwritten if it already exists, by default True
         """
         File = SFunction(name, path)
-        File.addState(self._x, self._Equations[0])
-        File.addOutput(self._Equations[1])
-        for inp in self._Inputs:
-            File.addInput(inp)
+        File.addState(self._x, self._State_Equations)
+        File.addOutput_equations(self._Outputs_Calcs)
+        for o in self._Outputs:
+            File.addOutput(o)
+        
+        File.addInput(self._Inputs[0], len(self._Input_Calcs.outputs))
         File.addParameter(self._Parameters) 
         File.generateFile(overwrite)
     
@@ -315,22 +361,23 @@ class DynamicSystem(System):
             If true, the files will be overwritten if they already exist, by default True
         """
         Fdyn = MFunction(name + "_dyn", path)
+        
         Fdyn.addInput(self.x, "x")
         Fdyn.addInput(self.u, "u")
         pars = []
         for i in self._Parameters:
             pars.append(i[0])
-        Fdyn.addInput(pars, "params")
+        Fdyn.addInput(se.Matrix(pars), "params")
         Fdyn.addOutput(self.x_dot, "xdot")
-        Fdyn.addEquations(self._Equations[0], self.x_dot)
+        Fdyn.addCalculation(self._Input_Calcs.append_Calculation(self._State_Equations))
         
         Fdyn.generateFile(overwrite)
         
         Fout = MFunction(name + "_out", path)
         Fout.addInput(self.x, "x")
-        Fout.addInput(pars, "params")
+        Fout.addInput(se.Matrix(pars), "params")
         Fout.addOutput(self.y, "y")
-        Fout.addEquations(self._Equations[1], self.y)
+        Fout.addCalculation(self._Input_Calcs.append_Calculation(self._Outputs_Calcs))
         Fout.generateFile(overwrite)
     
     def _create_symbolic_steady_state_state_vector(self) -> se.Matrix:

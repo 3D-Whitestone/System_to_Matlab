@@ -1,11 +1,12 @@
-import pytest
 import symengine as se
-from System_to_Matlab import DynamicSymbol, StaticSymbol, DynamicSymbols, StaticSymbols, diff_t, Drehmatrix, DynamicSystem, StaticSystem
-import sympy as sp
 import filecmp
 import os
+from System_to_Matlab import DynamicSymbol, StaticSymbols, diff_t, Drehmatrix, DynamicSystem
+import symengine as se
 
 def create_sys():
+    se.init_printing(pretty_print=True)
+
     params = StaticSymbols(["g", "m_2", "m_3", "s_2", "s_3", "l_2", "l_3", "B_{S1}", "A_{S2}", "B_{S2}", "C_{S2}", "A_{S3}", "B_{S3}", "C_{S3}", "i_{G1}", "i_{G2}", "i_{G3}", "B_{M1}", "C_{M2}", "C_{M3}"])
 
     [g, m2, m3, s2, s3, l2, l3, B_S1, A_S2, B_S2, C_S2, A_S3, B_S3, C_S3, i_G1, i_G2, i_G3, B_M1, C_M2, C_M3] = params
@@ -121,8 +122,9 @@ def create_sys():
     sys = DynamicSystem(h,u_var.vars)
     sys.addStateEquations(f)
     sys.addOutput(h, "x")
-    sys.addInput(u_var.vars)
+    # sys.addInput(se.Matrix(u_var.vars), "u")
     sys.addParameter(params, param_values)
+    
     return sys
 
 def test_DynamicSystem_values():
@@ -140,10 +142,10 @@ def test_DynamicSystem_values():
     sys.write_SFunction("Test",path_test)
     sys.write_MFunctions("Test",path_test)
     
-    assert filecmp.cmp(path_test + "\\init_ref.m", path_test +"\\init.m", shallow = False) == True
-    assert filecmp.cmp(path_test +"\\Test_ref.m", path_test +"\\Test.m", shallow = False) == True
-    assert filecmp.cmp(path_test +"\\init_ref.m", path_test +"\\init.m", shallow = False) == True
+    assert filecmp.cmp(path_test + "\\init_ref.m", path_test + "\\init.m", shallow = False) == True
+    assert filecmp.cmp(path_test + "\\Test_ref.m", path_test + "\\Test.m", shallow = False) == True
+    assert filecmp.cmp(path_test + "\\init_ref.m", path_test + "\\init.m", shallow = False) == True
     
-    os.remove(path_test + "\\ss_matrices.m")
-    os.remove(path_test + "\\init.m")
-    os.remove(path_test +"\\Test.m")
+    #os.remove(path_test + "\\ss_matrices.m")
+    #os.remove(path_test + "\\init.m")
+    #os.remove(path_test +"\\Test.m")

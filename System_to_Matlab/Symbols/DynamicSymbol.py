@@ -1,6 +1,6 @@
 from .Symbol import Symbol
 import symengine as se
-from typing import Union, List, Any
+from typing import Union, Any
 
 
 class DynamicSymbol(Symbol):
@@ -53,12 +53,12 @@ class DynamicSymbol(Symbol):
             self._gen_differentiation_dict()
 
     @property
-    def vars(self) -> Union[se.MutableDenseMatrix, List[se.MutableDenseMatrix]]:
+    def vars(self) -> Union[se.Matrix, list[se.Matrix]]:
         """returns a Matrix of the generated Symbols
 
         Returns
         -------
-        Union[se.MutableDenseMatrix, List[se.MutableDenseMatrix]]
+        Union[se.Matrix, list[se.Matrix]]
             Matrix of the generated Symbols
         """
         if self._number_of_derivatives == 0:
@@ -156,13 +156,13 @@ class DynamicSymbol(Symbol):
         return se.Matrix(self._Symbols).reshape(self._number_of_variables, self._number_of_derivatives + 1)._repr_latex_()
 
 
-def DynamicSymbols(names: List[str], number_of_variables: int = 1, number_of_derivatives: int = 0, as_matrix_list = False) -> Any:
+def DynamicSymbols(names: list[str], number_of_variables: int = 1, number_of_derivatives: int = 0, as_matrix_list = False) -> Any:
     """ Method to generate a list of DynamicSymbols
 
     Parameters
     ----------
-    names : List[str]
-        List of names for the DynamicSymbols
+    names : list[str]
+        list of names for the DynamicSymbols
     number_of_variables : int, optional
         Number of variables to create per name, by default 1
     number_of_derivatives : int, optional
@@ -173,7 +173,7 @@ def DynamicSymbols(names: List[str], number_of_variables: int = 1, number_of_der
     Returns
     -------
     Any
-        List of DynamicSymbols or Matrix of DynamicSymbols
+        list of DynamicSymbols or Matrix of DynamicSymbols
     """
     l = []
     

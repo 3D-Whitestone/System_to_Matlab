@@ -1,8 +1,7 @@
-from typing import Union, Any, List, Tuple
 import symengine as se
 
 
-def Drehmatrix(angle_vec: Union[se.Matrix , list]) -> se.Matrix:
+def Drehmatrix(angle_vec: se.Matrix | list) -> se.Matrix:
     """Computes the 3D rotation matrix for the given angle vector.
 
     The angle vector must be in the form [x, y, z], where x, y, and z

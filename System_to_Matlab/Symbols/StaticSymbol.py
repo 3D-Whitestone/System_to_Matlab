@@ -1,8 +1,6 @@
 from .Symbol import Symbol
 import symengine as se
 
-from typing import Union, List
-
 class StaticSymbol(Symbol):
     """generates an instance of the StaticSymbol class
 
@@ -24,12 +22,13 @@ class StaticSymbol(Symbol):
             Number of variables which should be created, by default 1
         """
         if not isinstance(Notation, str) or Notation == "" :
-            raise ValueError("Notation must be a non empty string")
+            raise ValueError(f"Notation must be a non empty string but {type(Notation)} was given")
         
         super().__init__(Notation)
+        self._Outputs: list = []
         self._number_of_variables = number_of_variables
         self._gen_numbered_state_variables()
-    
+        
     @property
     def vars(self) -> se.Matrix:
         """returns a Matrix of the generated Symbols
@@ -62,20 +61,20 @@ class StaticSymbol(Symbol):
         return self.vars._repr_latex_()
     
 
-def StaticSymbols(names: List[str], number_of_variables: int = 1) -> List[se.Symbol]:
+def StaticSymbols(names: list[str], number_of_variables: int = 1) -> list[se.Symbol]:
     """Method to generate a list of StaticSymbols
 
     Parameters
     ----------
-    names : List[str]
-        List of names for the StaticSymbols
+    names : list[str]
+        list of names for the StaticSymbols
     number_of_variables : int, optional
         Number of variables to create per name given, by default 1
 
     Returns
     -------
-    List[se.Symbol]
-        List of the generated StaticSymbols
+    list[se.Symbol]
+        list of the generated StaticSymbols
     """
     l = []
     if number_of_variables == 1:
