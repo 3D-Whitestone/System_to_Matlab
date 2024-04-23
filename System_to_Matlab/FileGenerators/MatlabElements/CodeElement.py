@@ -48,11 +48,13 @@ class CodeElement(MatlabElement):
         self._Indentation: int = indent
         self._Clear: bool = clear
         self._override: bool = False
-        self._lhs: se.Symbol = None
+        self._lhs: se.Matrix = None
 
     def override_lhs(self, lhs: se.Symbol) -> CodeElement:
+        if not isinstance(lhs, se.Symbol):
+            raise TypeError(f"lhs has to be a Symbol but {type(lhs)} was given")
         self._override = True
-        self._lhs = lhs
+        self._lhs = se.Matrix([lhs])
         return self
 
     def generateCode(self) -> str:

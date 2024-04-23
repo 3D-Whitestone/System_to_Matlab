@@ -41,20 +41,29 @@ class Calculation:
                 raise ValueError(
                         f"var and calc have to have the same shape but {var.shape} and {calc.shape} were given")
 
-        for i in range(len(self._calcs)):
-            calc = calc.subs(self._vars[i], self._calcs[i])
+        if is_matrix_input and isinstance(var, se.Matrix):
+            if var.shape[1] == 1:
+                for i, element in enumerate(var):
+                    self.addCalculation(element, se.Symbol(str(calc) + f"({i+1})"), is_matrix_input=False)
+            else:
+                for row in range(var.rows):
+                    for col in range(var.cols):
+                        self.addCalculation(var[row, col], se.Symbol(str(calc) + f"({row+1},{col+1})"), is_matrix_input=False)
+        else:
+            for i in range(len(self._calcs)):
+                calc = calc.subs(self._vars[i], self._calcs[i])
 
-        # add calculation
-        self._check_and_add_outputs(var)
-        self._check_and_add_Inputs(calc)
+            # add calculation
+            self._check_and_add_outputs(var)
+            self._check_and_add_Inputs(calc)
 
-        if isinstance(var,(se.Symbol, se.Function)):
-            var = se.Matrix([var])
-        if isinstance(calc, se.Expr):
-            calc = se.Matrix([calc])
+            if isinstance(var,(se.Symbol, se.Function)):
+                var = se.Matrix([var])
+            if isinstance(calc, se.Expr):
+                calc = se.Matrix([calc])
 
-        self._vars.append(var)
-        self._calcs.append(calc)
+            self._vars.append(var)
+            self._calcs.append(calc)
 
     def _check_and_add_outputs(self, var):
         """ Checks if the outputs are already defined and if issue a warning.
@@ -98,6 +107,8 @@ class Calculation:
         """
         for i in range(len(self._vars)):
             self._vars[i] = self._vars[i].subs(subs)
+            temp1 = self._calcs[i]
+            temp2 = self._calcs[i].subs(subs)
             self._calcs[i] = self._calcs[i].subs(subs)
 
         for i in range(len(self._inputs)):
@@ -134,12 +145,23 @@ class Calculation:
         """
         for i in range(len(calc._calcs)):
             if calc._vars[i].shape == (1,1):
-                self.addCalculation(calc._vars[i][0], calc._calcs[i], is_matrix_input=True)
+                self.addCalculation(calc._vars[i][0], calc._calcs[i])#, is_matrix_input=True)
             else:
-                self.addCalculation(calc._vars[i], calc._calcs[i], is_matrix_input=True)
+                self.addCalculation(calc._vars[i], calc._calcs[i])#, is_matrix_input=True)
             
         return self
 
+    @staticmethod
+    def append_Calculations(calcs: list[Calculation]) -> Calculation:
+        """ Appends two Calculations.
+        ----------
+        calcs : list[Calculation]
+            The Calculations to be appended.
+        """
+        calc = Calculation()
+        for calc1 in calcs:
+            calc.append_Calculation(calc1)
+        return calc
 
     @property
     def inputs(self):

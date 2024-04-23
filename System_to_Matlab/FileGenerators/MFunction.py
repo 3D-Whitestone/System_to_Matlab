@@ -87,32 +87,6 @@ class MFunction(FileGenerator):
         calc : Calculation
             The calculation to be added.            
         """  # noqa: E501
-        # if not isinstance(equations, (se.Expr, list, se.Matrix)):
-        #     raise TypeError("The equations have to be a list, a matrix or a single expression")
-        # if isinstance(equations, se.Expr):
-        #     equations = se.Matrix([equations])
-        # if isinstance(equations, list):
-        #     equations = se.Matrix(equations)
-
-        # if isinstance(name, str):
-        #     name = se.Symbol(name)
-        #     name = se.Matrix([name])
-        # elif isinstance(name, se.Symbol):
-        #     name = se.Matrix([name])
-        # elif isinstance(name, list) and isinstance(name[0], str):
-        #     name = se.Matrix([se.Symbol(na) for na in name])
-        # elif isinstance(name, list) and isinstance(name[0], se.Symbol):
-        #     name = se.Matrix([name])
-        # elif isinstance(name, se.Matrix):
-        #     pass
-        # else:
-        #     raise TypeError("The name has to be a list of strings, a list of symbols, a matrix of symbols or a single symbol")
-
-        # if self._Calculations is None:
-        #     self._Calculations = [name, equations]
-        # else:
-        #     self._Calculations[0].col_join(name)
-        #     self._Calculations[1].col_join(equations)
         if not isinstance(calc, Calculation):
             raise TypeError(f"The calculation has to be a Calculation but {type(calc)} was given")
         self._Calculations.append_Calculation(calc)
@@ -142,7 +116,9 @@ class MFunction(FileGenerator):
         self._Elements.append(StringElement(
             "function [" + sout + "] = " + self._Filename.removesuffix(".m") + "(" + sin + ") \n"))
 
-        self._Elements.append(CodeElement(self._Input_Calcs.append_Calculation(self._Calculations).append_Calculation(self._Outputs_Calcs), 1, True, False))
+        self._Elements.append(CodeElement(self._Input_Calcs, 1, True, False))
+
+        self._Elements.append(CodeElement(Calculation.append_Calculations([self._Calculations, self._Outputs_Calcs]), 1, True, False))
         
 
         # sin = ""

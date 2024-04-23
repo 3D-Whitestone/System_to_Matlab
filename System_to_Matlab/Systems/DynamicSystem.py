@@ -43,11 +43,11 @@ class DynamicSystem():
         self._Outputs: list[se.Symbols | se.Function] = []
         self._Outputs_Calcs: Calculation = Calculation()
         self._Inputs: list[se.Symbols | se.Function] = [se.Symbol("u")]
-        self._Input_Calcs: Calculation = Calculation()
+        # self._Input_Calcs: Calculation = Calculation()
 
-        self._Input_Calcs.addCalculation(self._u, se.Symbol('u'),is_matrix_input=True)
+        # self._Input_Calcs.addCalculation(self._u, se.Symbol('u'),is_matrix_input=True)
         
-        self._Parameters: list[se.Symbol | se.Function] = []
+        self._Parameters: list[tuple[se.Symbol | se.Function, float]] = []
     
     @property
     def A(self) -> se.Matrix:
@@ -181,11 +181,12 @@ class DynamicSystem():
         
         return [self._A, self._B, self._C, self._D]
 
-    def addStateEquations(self, equations: se.Matrix ) -> None:
+    def addStateEquations(self, equations: se.Matrix , add_as_Output = True) -> None:
         """adding the equations for the states of the system x_dot = f(x, u)
 
         Args:
             equation (se.Matrix): Matrix of the expressions corresponding to the system states
+            add_as_Output (bool, optional): If true the equations will be added as outputs. Defaults to True.
         """
         if isinstance(equations, se.Matrix):
             if equations.shape[1] != 1:
@@ -199,6 +200,10 @@ class DynamicSystem():
             raise ValueError("State equations are already set")
         self._State_Equations.addCalculation(self.x_dot, equations)
         self._number_of_states = equations.shape[0]
+        
+        if add_as_Output:
+            for state in self.x:
+                self.addOutput(state)
   
     # def addInput(self, input: se.Symbol | se.Function | se.Matrix, name: str | se.Symbol = "") -> None:
     #     """Adds an aditional input to the System.
@@ -251,13 +256,15 @@ class DynamicSystem():
 
     def addOutput(self, output: se.Symbol | se.Function, name: str = "") -> None:
         """Adds an output to the System.
-        When a name is given the given Symbol will be outputed with the given name.
+        When a name is given the given Symbol will be outputed with the given name (only when using M-Functions, an S-function has only one combined output).
         ----------
         output : se.Symbol | se.Function
             The output to be added.
         name : str, optional
             The name of the output. Defaults to "".
         """
+        if not isinstance(output, (se.Symbol, se.Function)):
+            raise TypeError("Output has to be a Symbol or a Function")
         if name == "":
             self._Outputs.append(output)
         else:
@@ -344,7 +351,10 @@ class DynamicSystem():
         for o in self._Outputs:
             File.addOutput(o)
         
-        File.addInput(self._Inputs[0], len(self._Input_Calcs.outputs))
+        #for i in self._Input_Calcs.outputs:
+        #    File.addInput(i)
+        File.addInput(self._u, se.Symbol('u'))
+            
         File.addParameter(self._Parameters) 
         File.generateFile(overwrite)
     
@@ -364,20 +374,23 @@ class DynamicSystem():
         
         Fdyn.addInput(self.x, "x")
         Fdyn.addInput(self.u, "u")
-        pars = []
-        for i in self._Parameters:
-            pars.append(i[0])
-        Fdyn.addInput(se.Matrix(pars), "params")
-        Fdyn.addOutput(self.x_dot, "xdot")
-        Fdyn.addCalculation(self._Input_Calcs.append_Calculation(self._State_Equations))
+        # pars = []
+        # for i in self._Parameters:
+        #     pars.append(i[0])
+        Fdyn.addInput(se.Matrix([i[0] for i in self._Parameters ]), "params")
+        #Fdyn.addOutput(self.x_dot, "xdot")
+        temp = Calculation()
+        temp.addCalculation(se.Symbol("xdot"),self._State_Equations.calcs[0] )
+        Fdyn.addCalculation(Calculation.append_Calculations([temp]))
+        Fdyn.addOutput(se.Symbol("xdot"))
         
         Fdyn.generateFile(overwrite)
         
         Fout = MFunction(name + "_out", path)
         Fout.addInput(self.x, "x")
-        Fout.addInput(se.Matrix(pars), "params")
+        Fout.addInput(se.Matrix([i[0] for i in self._Parameters ]), "params")
         Fout.addOutput(self.y, "y")
-        Fout.addCalculation(self._Input_Calcs.append_Calculation(self._Outputs_Calcs))
+        Fout.addCalculation(Calculation.append_Calculations([self._Outputs_Calcs]))
         Fout.generateFile(overwrite)
     
     def _create_symbolic_steady_state_state_vector(self) -> se.Matrix:

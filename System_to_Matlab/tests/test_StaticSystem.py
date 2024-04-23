@@ -32,15 +32,14 @@ def test_addInput_single():
     sys = StaticSystem()
     sys.addInput(in1, 'in1')
     assert len(sys._Inputs) == 1
-    assert sys._Inputs[0] == se.Symbol('in1')
+    assert sys._Inputs[0] == (in1, 'in1')
 
 def test_addInput_list():
     sys = StaticSystem()
     sys.addInput(se.Matrix([in1,in2,in3]), "in")
     assert len(sys._Inputs) == 1
-    assert sys._Inputs[0] == se.Symbol("in")
-    assert sys._Input_Calcs.vars[0] == se.Matrix([in1,in2,in3])
-    assert sys._Input_Calcs.calcs[0] == se.Matrix([se.Symbol("in")])
+    assert sys._Inputs[0] == (se.Matrix([in1,in2,in3]), 'in')
+
     
 
 def test_addOutput_single():
@@ -61,7 +60,9 @@ def test_addOutput_multiple():
 def test_write_MFunctions():
     sys = StaticSystem()
     sys.addInput(in1, 'input')
-    sys.addCalculation(x , in1**2+in1)
+    sys.addInput(se.Matrix([in2,in3]), "input2")
+    sys.addInput(se.Matrix([[in1,in2],[in3,in1]]), "input3")
+    sys.addCalculation(x , in2**2+in3)
     sys.addCalculation(out1, x**2 + in1**2)
     sys.addCalculation(z, x**2)
     sys.addCalculation(out2, se.Matrix([out1,z]))

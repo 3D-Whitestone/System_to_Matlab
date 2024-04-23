@@ -14,8 +14,7 @@ class StaticSystem():
         self._Equations: Calculation = Calculation()
         self._Outputs: list[se.Symbols | se.Function] = []
         self._Outputs_Calcs: Calculation = Calculation()
-        self._Inputs: list[se.Symbols | se.Function] = []
-        self._Input_Calcs: Calculation = Calculation()
+        self._Inputs: list[tuple[se.Symbols | se.Function, str | se.Symbol]] = []
     
     def addCalculation(self, name: Union[str, se.Symbol, list[str], Calculation], rhs: se.Expr = None) -> None:
         """Adding an Calculation to the System. Has to have the form name = rhs.
@@ -55,11 +54,7 @@ class StaticSystem():
         else:
             is_input_matrix = False
         
-        if name == "":
-            self._Inputs.append(input)
-        else:
-            self._Inputs.append(se.Symbol(name))
-            self._Input_Calcs.addCalculation(input, se.Symbol(name),is_matrix_input=is_input_matrix)
+        self._Inputs.append((input, name))
     
     def addOutput(self, output: se.Symbol | se.Function, name: str = "") -> None:
         """Adds an output to the System.
@@ -107,9 +102,10 @@ class StaticSystem():
         """
         
         Fdyn = MFunction(name , path)
-        Fdyn._Inputs = self._Inputs
+        for i in self._Inputs:
+            Fdyn.addInput(i[0], i[1])
         Fdyn._Outputs = self._Outputs
-        Fdyn._Calculations.append_Calculation(self._Input_Calcs).append_Calculation(self._Equations).append_Calculation(self._Outputs_Calcs)
+        Fdyn._Calculations.append_Calculation(self._Equations).append_Calculation(self._Outputs_Calcs)
         
         Fdyn.generateFile()
 

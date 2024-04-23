@@ -1,0 +1,32 @@
+function [y] = Test_out(x, params) 
+	q1 = x(1);
+	q2 = x(2);
+	q3 = x(3);
+	q1dot = x(4);
+	q2dot = x(5);
+	q3dot = x(6);
+	g = params(1);
+	m2 = params(2);
+	m3 = params(3);
+	s2 = params(4);
+	s3 = params(5);
+	l2 = params(6);
+	l3 = params(7);
+	BS1 = params(8);
+	AS2 = params(9);
+	BS2 = params(10);
+	CS2 = params(11);
+	AS3 = params(12);
+	BS3 = params(13);
+	CS3 = params(14);
+	iG1 = params(15);
+	iG2 = params(16);
+	iG3 = params(17);
+	BM1 = params(18);
+	CM2 = params(19);
+	CM3 = params(20);
+	x0 = q1 + q2./q3;
+
+	out1 = x0;
+	y = x0;
+end

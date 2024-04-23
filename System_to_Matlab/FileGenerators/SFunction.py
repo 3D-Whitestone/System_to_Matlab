@@ -22,8 +22,9 @@ class SFunction(FileGenerator):
         super().__init__(Filename, Path)
         
         self._Inputs: list[se.Symbol | se.Function] = []
+        self._Input_Calcs: Calculation = Calculation()
         self._Outputs: list[se.Symbol | se.Function] = []
-        self._Calculations: Calculation = Calculation()
+        self._Output_Calculations: Calculation = Calculation()
 
         self._StateEquations: Calculation = Calculation()
         self._States: se.Matrix = None
@@ -63,18 +64,46 @@ class SFunction(FileGenerator):
         calc : Calculation
             Calculation of the outputs
         """
-        self._Calculations.append_Calculation(calc)
+        self._Output_Calculations.append_Calculation(calc)
+        #self._Output_Calculations._vars = [se.Matrix([se.Symbol("sys")])]
 
-    def addInput(self, input: se.Symbol | se.Function, expands_to = 1) -> None:
-        """Adds an input to the function.
+    # def addInput(self, input: se.Symbol | se.Function, expands_to = 1) -> None:
+    #     """Adds an input to the function.
 
-        Parameters
+    #     Parameters
+    #     ----------
+    #     input : se.Symbol | se.Function
+    #         The input to be added. (Must be a symengine object)
+    #     """
+    #     self._number_of_inputs += expands_to
+    #     self._Inputs.append(input)
+
+    def addInput(self, input: se.Symbol | se.Function | se.Matrix, name: str | se.Symbol = "") -> None:
+        """Adds an input to the System.
+        When a name is given the given Symbol/Matrix will be outputed with the given name.
         ----------
-        input : se.Symbol | se.Function
-            The input to be added. (Must be a symengine object)
+        input : se.Symbol | se.Function | se.Matrix
+            The input to be added.
+        name : str, optional
+            The name of the input. If non is given the name of the Symbol itself is used. Defaults to "".
         """
-        self._number_of_inputs += expands_to
-        self._Inputs.append(input)
+        
+        if isinstance(input, se.Matrix):
+            if name == "":
+                raise ValueError("Matrix inputs have to have a name")
+            is_input_matrix = True
+        else:
+            is_input_matrix = False
+        
+        if name == "":
+            self._Inputs.append(input)
+        else:
+            
+            if isinstance(name, str):
+                name = se.Symbol(name)
+            self._Inputs.append(name)
+            self._Input_Calcs.addCalculation(input, name,is_matrix_input=is_input_matrix)
+
 
     def addOutput(self, output: se.Symbol | se.Function) -> None:
         """Adds an output to the function.
@@ -130,26 +159,14 @@ class SFunction(FileGenerator):
         
         for i, state in enumerate(self._States):
             self._StateEquations.subs({state: se.Symbol(f"x({i+1})")})
-            self._Calculations.subs({state: se.Symbol(f"x({i+1})")})
+            self._Output_Calculations.subs({state: se.Symbol(f"x({i+1})")})
+            for ii, out in enumerate(self._Outputs):
+                self._Outputs[ii] = out.subs({state: se.Symbol(f"x({i+1})")})
 
-        for i, inpu in enumerate(self._Inputs):
-            self._StateEquations.subs({inpu: se.Symbol(f"u({i+1})")})
-            self._Calculations.subs({inpu: se.Symbol(f"u({i+1})")})
-        # i = 0
-        #
-        # for state in self._States:
-        #     i += 1
-        #     for ii in range(len(self._StateEquations)):
-        #         self._StateEquations[ii] = self._StateEquations[ii].subs(state, se.Symbol(f"x({i})"))
-        #     for ii in range(len(self._Outputs)):
-        #         self._Outputs[ii] = self._Outputs[ii].subs(state, se.Symbol(f"x({i})"))
-        # i = 0    
-        # for inp in self._Inputs:
-        #     i+=1
-        #     for ii in range(len(self._StateEquations)):
-        #         self._StateEquations[ii] = self._StateEquations[ii].subs(inp, se.Symbol(f"u({i})"))
-        #     for ii in range(len(self._Outputs)):
-        #         self._Outputs[ii] = self._Outputs[ii].subs(inp, se.Symbol(f"u({i})"))
+        # for i, input in enumerate(self._Inputs):
+        #     self._StateEquations.subs({input: se.Symbol(f"u({i+1})")})
+        #     self._Output_Calculations.subs({input: se.Symbol(f"u({i+1})")})
+            
         
         s_para_input = self._Parameter_Input_String()
         self._Elements.append(StringElement(f"function [sys,x0,str,ts] = {self._Filename[:-2]}(t,x,u,flag,params,x_ic) \n "))
@@ -159,7 +176,7 @@ class SFunction(FileGenerator):
         self._Elements.append(StringElement("\t \t" + f"sizes.NumContStates = {len(self._States)}; \t"  + r"% number of continous states" + " \n"))
         self._Elements.append(StringElement("\t \t" + f"sizes.NumDiscStates = 0; \t"  + r"% number of discrete states" + " \n"))
         self._Elements.append(StringElement("\t \t" + f"sizes.NumOutputs = {len(self._States)}; \t"  + r"% number of system outputs" + " \n"))
-        self._Elements.append(StringElement("\t \t" + f"sizes.NumInputs = {self._number_of_inputs}; \t"  + r"% number of system inputs" + " \n"))
+        self._Elements.append(StringElement("\t \t" + f"sizes.NumInputs = {len(self._Input_Calcs.vars)}; \t"  + r"% number of system inputs" + " \n"))
         self._Elements.append(StringElement("\t \t" + f"sizes.DirFeedthrough = 0; \t"  + r"% direct feedtrough flag" + " \n"))
         self._Elements.append(StringElement("\t \t" + f"sizes.NumSampleTimes = 1; \t"  + r"% at least one sample time is needed" + " \n"))
         self._Elements.append(StringElement("\t \t" + "sys = simsizes(sizes); \n \n"))
@@ -172,12 +189,18 @@ class SFunction(FileGenerator):
         self._Elements.append(StringElement("\t \t" + s_para_input +"\n"))
         self._Elements.append(StringElement("\t \t" + f"sys = zeros({len(self._States)},1); \n"))
         
+        self._Elements.append(CodeElement(self._Input_Calcs, 2, True, False))
         self._Elements.append(CodeElement(self._StateEquations, 2, True, False).override_lhs(se.Symbol("sys")))
         
         self._Elements.append(StringElement("\t" + r"case 3, % output" + " \n"))
         self._Elements.append(StringElement("\t \t" + s_para_input +"\n"))
-        self._Elements.append(StringElement("\t \t" + f"sys = zeros({len(self._Outputs)},1); \n"))  
-        self._Elements.append(CodeElement(self._Calculations, 2, True, False))
+        self._Elements.append(StringElement("\t \t" + f"sys = zeros({len(self._States)},1); \n"))
+        
+        self._Elements.append(CodeElement(self._Input_Calcs, 2, True, False))  
+        self._Elements.append(CodeElement(self._Output_Calculations, 2, True, False))
+        temp = Calculation()
+        temp.addCalculation(se.Symbol("sys"), se.Matrix(self._Outputs))
+        self._Elements.append(CodeElement(temp,2, True, False))
         
         self._Elements.append(StringElement("\t" + r"case {2,4,9}, % unused flags" + " \n"))
         self._Elements.append(StringElement("\t \t" + "sys = []; \n"))

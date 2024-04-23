@@ -120,8 +120,13 @@ def create_sys():
     
     h = q.col_join(q_dot)
     sys = DynamicSystem(h,u_var.vars)
-    sys.addStateEquations(f)
-    sys.addOutput(h, "x")
+    sys.addStateEquations(f, add_as_Output=True)
+    
+    # sys.addOutput(h, "x")
+    
+    out1 = q1+q2 / q3
+    sys.addCalculation(se.Symbol("out1"),out1)
+    sys.addOutput(se.Symbol("out1"))
     # sys.addInput(se.Matrix(u_var.vars), "u")
     sys.addParameter(params, param_values)
     
@@ -142,10 +147,16 @@ def test_DynamicSystem_values():
     sys.write_SFunction("Test",path_test)
     sys.write_MFunctions("Test",path_test)
     
+    assert filecmp.cmp(path_test + "\\ss_matrices_ref.m", path_test + "\\ss_matrices.m", shallow = False) == True
+    
     assert filecmp.cmp(path_test + "\\init_ref.m", path_test + "\\init.m", shallow = False) == True
     assert filecmp.cmp(path_test + "\\Test_ref.m", path_test + "\\Test.m", shallow = False) == True
-    assert filecmp.cmp(path_test + "\\init_ref.m", path_test + "\\init.m", shallow = False) == True
     
-    #os.remove(path_test + "\\ss_matrices.m")
-    #os.remove(path_test + "\\init.m")
-    #os.remove(path_test +"\\Test.m")
+    assert filecmp.cmp(path_test + "\\Test_dyn_ref.m", path_test + "\\Test_dyn.m", shallow = False) == True
+    assert filecmp.cmp(path_test + "\\Test_out_ref.m", path_test + "\\Test_out.m", shallow = False) == True
+    
+    os.remove(path_test + "\\ss_matrices.m")
+    os.remove(path_test + "\\init.m")
+    os.remove(path_test +"\\Test.m")
+    os.remove(path_test + "\\Test_dyn.m")
+    os.remove(path_test + "\\Test_out.m")
