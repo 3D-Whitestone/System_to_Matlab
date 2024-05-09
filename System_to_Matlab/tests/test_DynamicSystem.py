@@ -2,7 +2,6 @@ import symengine as se
 import filecmp
 import os
 from System_to_Matlab import DynamicSymbol, StaticSymbols, diff_t, Drehmatrix, DynamicSystem
-import symengine as se
 
 def create_sys():
     se.init_printing(pretty_print=True)

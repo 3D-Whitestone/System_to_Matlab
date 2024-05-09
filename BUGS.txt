@@ -25,4 +25,4 @@ Mögliche Erweiterungen:
 
 Generierung von schöneren Standard SteadyState Variablen in der Symbol Klasse. 
 
-Drehmatrix2 Funktion die gleich beide Richtungen der Drehmatrix zurückgibt
+Rotation Matrix als Klasse implementieren die automatisch die jeweiligen Drehmatrizen generiert. 
