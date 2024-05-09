@@ -2,7 +2,7 @@ import pytest
 import symengine as se
 from System_to_Matlab import DynamicSymbol, DynamicSymbols
 
-
+t = DynamicSymbol._derivation_variable
 def test_DynamicSymbol_values():
     # Test initialization with valid input
     ds = DynamicSymbol("x", number_of_variables=2, number_of_derivatives=1)
