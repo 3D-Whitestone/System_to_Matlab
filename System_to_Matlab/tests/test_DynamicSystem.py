@@ -159,3 +159,29 @@ def test_DynamicSystem_values():
     os.remove(path_test +"\\Test.m")
     os.remove(path_test + "\\Test_dyn.m")
     os.remove(path_test + "\\Test_out.m")
+
+def test_DynamicSystem_linearize_simple():
+    R1, R2, R3, R4, R5 = StaticSymbols(["R_1", "R_2", "R_3", "R_4", "R_5"])
+    C1, C2 = StaticSymbols(["C_1", "C_2"])
+    params = [R1, R2, R3, R4, R5, C1, C2]
+    [uc,uc_dot,uc_ddot] = DynamicSymbol("u_C",2,2).vars
+    [ue, ue_dot, ue_ddot] = DynamicSymbol("u_E",1,2).vars
+    ue = ue[0]
+    ue_dot = ue_dot[0]
+    ue_ddot = ue_ddot[0]
+    f1 = (R4*uc[1] - R5*uc[0])/(C1*R3*R5)
+    f2 = R4*uc[1]/(C2*R3*R5) - uc[0]/(C2*R3) - uc[1]/(C2*R2) +ue/(C2*R1) - uc[1]/(C2*R1)
+    f = se.Matrix([f1,f2])
+    
+    sys = DynamicSystem(se.Matrix([uc[0],uc[1]]), se.Matrix([ue]))
+    sys.addStateEquations(f, False)
+    sys.addParameter(params)
+    sys.addOutput(uc[1])
+
+    A,B,C,D = sys.linearize()
+    
+    assert A == se.Matrix([[-1/(C1*R3), R4/(C1*R5*R3)], [-1/(C2*R3), -1/(C2*R1)-1/(C2*R2)+R4/(C2*R5*R3)]])#
+    assert B == se.Matrix([0, 1/(C2*R1)])
+    assert C == se.Matrix([0, 1]).T
+    assert D == se.Matrix([0])
+    

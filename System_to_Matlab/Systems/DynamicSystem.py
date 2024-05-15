@@ -267,6 +267,7 @@ class DynamicSystem():
             raise TypeError("Output has to be a Symbol or a Function")
         if name == "":
             self._Outputs.append(output)
+            self._Outputs_Calcs.addCalculation(output, output)
         else:
             self._Outputs.append(se.Symbol(name))
             self._Outputs_Calcs.addCalculation(se.Symbol(name), output)

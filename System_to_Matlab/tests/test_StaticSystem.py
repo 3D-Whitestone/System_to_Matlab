@@ -1,7 +1,5 @@
-import pytest
 import symengine as se
-from System_to_Matlab import StaticSystem, StaticSymbol
-from System_to_Matlab import StaticSymbols
+from System_to_Matlab import StaticSystem, StaticSymbols
 import filecmp
 import os
 
@@ -62,7 +60,8 @@ def test_write_MFunctions():
     sys.addInput(in1, 'input')
     sys.addInput(se.Matrix([in2,in3]), "input2")
     sys.addInput(se.Matrix([[in1,in2],[in3,in1]]), "input3")
-    sys.addCalculation(x , in2**2+in3)
+    eq1 = in2**2+in3
+    sys.addCalculation(x , eq1)
     sys.addCalculation(out1, x**2 + in1**2)
     sys.addCalculation(z, x**2)
     sys.addCalculation(out2, se.Matrix([out1,z]))
